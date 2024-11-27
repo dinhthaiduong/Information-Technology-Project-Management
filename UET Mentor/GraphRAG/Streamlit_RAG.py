@@ -49,13 +49,12 @@ def streamlit_ui():
         choice = option_menu('Navigation',["Home",'Simple RAG','RAG with Neo4J','AdaptiveRAG','RAG_Ranking'])
 
     if choice == 'Home':
-        st.title("RAG tutorial using multiple techniques")
+        st.title("Welcome to UET Mentor")
 
     elif choice == 'Simple RAG':
         with header:
             st.title('Simple RAG with vector')  
-            st.write("""This is a simple RAG process where user will upload a document then the document
-                     will go through RecursiveCharacterSplitter and embedd in FAISS DB""")
+            st.write("""Hello, I'm UET Mentor, a chatbot that will help you answer questions related to your studies at school""")
             
             source_docs = st.file_uploader(label ="Upload a document", type=['pdf'], accept_multiple_files=True)
             if not source_docs:
@@ -66,20 +65,19 @@ def streamlit_ui():
     elif choice == 'RAG with Neo4J':
         with header:
             st.title('RAG wih Neo4J')
-            st.write("""This is RAG approach with Neo4J knowledge graph. After uploading document -> click on Load Graph.
-                     Knowledge graph will display in chatbot. Responses of user queries will be fetched using hybrid search approach""")
+            st.write("""Hello, I'm UET Mentor, a chatbot that will help you answer questions related to your studies at school""")
             RAG_Neo4j()
 
     elif choice == 'AdaptiveRAG':
         with header:
-            st.title('Adaptive RAG with Langgraph')
-            st.write("""Adaptive RAG is a strategy for RAG that unites (1) query analysis with (2) active / self-corrective RAG.""")
+            st.title('')
+            st.write("""""")
             Adaptive_RAG()
 
     elif choice == 'RAG_Ranking':
         with header:
-            st.title('RAG with cohere ranking')
-            st.write("""Improved RAG retrieval process with cohere ranking""")
+            st.title('')
+            st.write("""""")
             RAG_with_ranking()
     
 
@@ -217,52 +215,6 @@ def Adaptive_RAG():
         st.session_state.messages2.append({'role':"assistant", "content":generated_answer})
 
         #chat_history2.append({prompt2,generated_answer1})
-
-def RAG_with_ranking():
-    #upload document
-    docs = st.file_uploader(label= "Upload document", type=['pdf'],accept_multiple_files=True)
-   
-    
-    if not docs:
-        st.warning("Please upload a document")
-    
-    for source_docs in docs:
-        with tempfile.NamedTemporaryFile(delete=False,dir=TMP_DIR.as_posix(),suffix='.pdf') as temp_file:
-            temp_file.write(source_docs.read())
- 
-    loader = DirectoryLoader(TMP_DIR.as_posix(), glob='**/*.pdf', show_progress=True)
-    documents = loader.load()
-
-    #Split the documents
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
-    text = text_splitter.split_documents(documents)
-
-    #Vector and embeddings
-    DB_FAISS_PATH = 'vectorestore_raking/faiss'
-    embedding = HuggingFaceEmbeddings(model_name ='sentence-transformers/all-MiniLM-L6-v2',
-                                         model_kwargs={'device':'cpu'})
-    db = FAISS.from_documents(text,embedding)
-    db.save_local(DB_FAISS_PATH)
-    retriever = db.as_retriever(search_kwards = {"k":20})
-
-    compressor = CohereRerank()
-    compressor_retriever = ContextualCompressionRetriever(
-        base_compressor=compressor,
-        base_retriever=retriever
-    )
-
-    qa_chain = RetrievalQA.from_chain_type(
-        llm = llm,
-        chain_type = "stuff",
-        retriever = compressor_retriever
-    )
-
-    if prompt := st.chat_input("Ask a question"):
-        response = qa_chain(prompt)
-        st.write(response)
-        compressor_docs = compressor_retriever.get_relevant_documents(prompt)
-        st.write(compressor_docs)
-
 
 def show_graph():
     st.title("Neo4j Graph Visualization")
