@@ -24,12 +24,9 @@ TMP_DIR = Path(__file__).resolve().parent.parent.joinpath("data", "tmp")
 
 def main():
     with st.sidebar:
-        choice = option_menu("Navigation", ["Home", "Graph Rag"])
+        choice = option_menu("Navigation", ["Graph Rag"])
 
-    if choice == "Home":
-        _ = st.title("Welcome to UET Mentor")
-
-    elif choice == "Graph Rag":
+    if choice == "Graph Rag":
         with header:
             _ = st.title("Graph Rag")
             st.write(
@@ -53,31 +50,38 @@ def hybrid_rag():
     uploaded = False
     if choice == "Upload document":
         flag = 1
-        source_docs = st.file_uploader(
-            label="Upload document", type=["docx", "pdf"], accept_multiple_files=True
+        files = st.file_uploader(
+            label="Upload document",
+            type=["pdf", "json", "jsonl", "txt"],
+            accept_multiple_files=True,
         )
 
-        if not source_docs:
+        if not files:
             _ = st.warning("Please upload a document")
         else:
             uploaded = True
-            for docs in source_docs:
-                # type_extension = docs.name.split(".")[-1]
-                file_pdf = PdfReader(docs)
-                for page in tqdm(file_pdf.pages):
-                    chunks = split_text_into_chunks(page.extract_text())
+            for file in files:
+                file_extension = file.name.split(".")[-1]
+                if file_extension == "pdf":
+                    file_pdf = PdfReader(file)
+                    for page in tqdm(file_pdf.pages):
+                        chunks = split_text_into_chunks(page.extract_text())
+                        for chunk in chunks:
+                            graph_rag.insert(chunk)
+
+                    inserted = graph_rag.write_to_db()
+                    print("Insert ", str(inserted), " value")
+                else:
+                    content = file.read().decode()
+                    chunks = split_text_into_chunks(content)
                     for chunk in chunks:
                         graph_rag.insert(chunk)
-
-                inserted = graph_rag.write_to_db()
-                print("Insert ", str(inserted), " value")
 
     else:
         show_graph()
 
     hybrid_rag = HybirdRag(graph_rag, vector_model="nomic-embed-text")
 
-    hybrid_rag.reload_vector_store()
     if uploaded:
         hybrid_rag.reload_vector_store()
 
