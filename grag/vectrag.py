@@ -54,7 +54,7 @@ class VectorRag:
                     return_dtype=pl.Float64,
                 ),
             }
-        ).top_k(2, by=pl.col("cosine"))
+        ).top_k(3, by=pl.col("cosine"))
         return query_df["text"].to_list()
 
     def save(self) -> None:

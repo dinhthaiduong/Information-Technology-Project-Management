@@ -20,20 +20,21 @@ class HybirdRag:
         if not os.path.exists(graph_rag.work_dir + vector_save_file):
             self.vector_rag.from_a_graph_db(graph_rag.db)
 
-    def chat(self, question: str) -> str:
-        entities = self.graph_rag.create_entities(question)
+    async def chat(self, question: str) -> str:
+        chat_res = await self.graph_rag.chat_create_entities(question)
+        entities = self.graph_rag.get_entites_from_chat_res(chat_res)
 
         output = []
-        vector_entities = [
-            (entity[1], get_index_or(self.vector_rag.query(entity[2]), 0, ""))
-            for entity in entities
-            if entity[0] == "entity"
-        ]
+        vector_entities = []
+
+        for entity in entities:
+            if entity[0] != "entity":
+                continue
+            for en in self.vector_rag.query(entity[2]):
+                vector_entities.append(en)
+
         for entity in vector_entities:
-            query = QUERY["match"].format(
-                    e=entity[0].capitalize(),
-                    id=entity[1],
-                )
+            query = QUERY["match"].format(id=entity)
             print(query)
             records, _, _ = self.graph_rag.db.execute_query(query)
 
@@ -47,8 +48,9 @@ class HybirdRag:
                 output.append(record["e2.description"])
 
         prompt = PROMPT["CHAT"].format(question=question, received="\n".join(output))
+        print(prompt)
 
-        return self.graph_rag.client.chat(prompt)
+        return await self.graph_rag.client.chat([{"role": "user", "content": prompt}])
 
     def reload_vector_store(self):
         self.vector_rag.from_a_graph_db(self.graph_rag.db)

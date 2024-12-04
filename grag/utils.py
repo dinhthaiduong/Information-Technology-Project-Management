@@ -9,7 +9,7 @@ class RagMode(Enum):
     QUERY = "query"
 
 
-def split_text_into_chunks(text: str, max_length=24000) -> list[str]:
+def split_text_into_chunks(text: str, max_length: int = 4000) -> list[str]:
     sentences = sent_tokenize(text)
     chunks = []
     current_chunk = ""
@@ -25,7 +25,6 @@ def split_text_into_chunks(text: str, max_length=24000) -> list[str]:
         chunks.append(current_chunk.strip())
 
     return chunks
-
 
 lemmatizer = WordNetLemmatizer()
 def extract_verbs(sentence: str) -> str:

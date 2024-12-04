@@ -1,7 +1,8 @@
 import re
-from ollama import Client as Ollama
-
-from openai import OpenAI
+from typing import Any, Mapping, Sequence
+from ollama import AsyncClient as Ollama, Message
+import asyncio
+from openai import AsyncClient as OpenAI
 from .prompts import PROMPT, QUERY
 import os
 import json
@@ -26,35 +27,38 @@ class ModelAddapter:
         self.provider: str = provider
         self.model: str = model
         if provider == "ollama":
-            self.client: OpenAI | Ollama = Ollama(host)
+            self.client: Ollama = Ollama(host)
         elif provider == "openai":
-            self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+            self.client: OpenAI = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         else:
             raise ValueError("invaid provider")
 
-    def chat(self, text: str, *, stream: bool = False) -> str:
+    async def chat(
+        self, messages: Sequence[Mapping[str, Any] | Message], *, stream: bool = False
+    ) -> str:
         if self.provider == "ollama":
-            chat_res = self.client.chat(
+            chat_res = await self.client.chat(
                 model=self.model,
-                messages=[{"role": "user", "content": text}],
+                messages=messages,
                 stream=stream,
             )
             return chat_res.message.content or ""
         elif self.provider == "openai":
-            chat_res = self.client.chat.completions.create(
+            chat_res = await self.client.chat.completions.create(
                 model=self.model,
-                messages=[{"role": "user", "content": text}],
+                messages=messages,
                 stream=stream,
             )
 
             return chat_res.choices[0].message.content or ""
+
         return ""
 
 
 def hashing_entity(entity: list[str]) -> str:
     if entity[0] == "relationship":
         return str(hash(entity[1] + entity[2] + entity[3]))
-    return str(hash(entity[2]))
+    return str(hash(entity[2] + get_index_or(entity, 3, "")))
 
 
 def is_entity(entity: list[str]) -> bool:
@@ -63,20 +67,6 @@ def is_entity(entity: list[str]) -> bool:
 
 def is_relationship(entity: list[str]) -> bool:
     return entity[0] == "relationship"
-
-
-def save_to_dict_concat(entities_vk: dict[str, list[str]], entity: list[str]):
-    hash_entity = hashing_entity(entity)
-    if hash_entity in entities_vk:
-        if is_entity(entity) and len(entity) > 3:
-            entity[0] = "relationship"
-            entity[1] = entity[2]
-            new_hash = hashing_entity(entity)
-            entities_vk[new_hash] = entity
-        elif len(entity) > 4:
-            entities_vk[hash_entity][3] += entity[3]
-    else:
-        entities_vk[hash_entity] = entity
 
 
 class GraphRag:
@@ -103,7 +93,9 @@ class GraphRag:
             return
 
         if os.path.exists(work_dir + "kv_entity_relationship.json"):
-            with open(work_dir + "kv_entity_relationship.json", "r", encoding='utf-8') as save_f:
+            with open(
+                work_dir + "kv_entity_relationship.json", "r", encoding="utf-8"
+            ) as save_f:
                 self.entities_vk = json.load(save_f) or {}
                 save_f.close()
 
@@ -114,12 +106,22 @@ class GraphRag:
                 )
                 saved_entity_f.close()
 
-    def create_entities(self, text: str) -> list[list[str]]:
-        chat_res_content = self.client.chat(
-            PROMPT["EXTRACT_ENTITY_RELATIONSHIP"].format(input_text=text)
+    async def chat_create_entities(self, text: str) -> str:
+        chat_res_content = await self.client.chat(
+            [
+                {
+                    "role": "user",
+                    "content": PROMPT["EXTRACT_ENTITY_RELATIONSHIP"].format(
+                        input_text=text
+                    ),
+                }
+            ]
         )
 
-        entities = regrex_input.findall(chat_res_content)
+        return chat_res_content
+
+    def get_entites_from_chat_res(self, res: str) -> list[list[str]]:
+        entities = regrex_input.findall(res)
         output = []
 
         for entity in entities:
@@ -132,6 +134,54 @@ class GraphRag:
 
         return list(filter(vaild_entity, output))
 
+    def save_to_dict_concat(self, entity: list[str]):
+        hash_entity = hashing_entity(entity)
+        if hash_entity in self.entities_vk:
+            if is_entity(entity) and len(entity) > 3:
+                entity[0] = "relationship"
+                entity[1] = entity[2]
+                new_hash = hashing_entity(entity)
+                self.entities_vk[new_hash] = entity
+            elif len(entity) > 4:
+                self.entities_vk[hash_entity][3] += entity[3]
+        else:
+            self.entities_vk[hash_entity] = entity
+
+    async def entities_polling(self, entities: list[list[str]], original_text: str):
+        entitites_only = [entity for entity in entities if is_entity(entity)]
+        relationships_only = [
+            relationship for relationship in entities if is_relationship(relationship)
+        ]
+
+        relationship_p, entities_p = await asyncio.gather(
+            self.client.chat(
+                [
+                    {
+                        "role": "user",
+                        "content": PROMPT["RELATIONSHIP_POLLING"].format(
+                            relationships=relationships_only, text=original_text
+                        ),
+                    }
+                ]
+            ),
+            self.client.chat(
+                [
+                    {
+                        "role": "user",
+                        "content": PROMPT["ENTITY_POLLING"].format(
+                            entities=entitites_only, text=original_text
+                        ),
+                    }
+                ]
+            ),
+        )
+        new_relationship_p = self.get_entites_from_chat_res(relationship_p)
+        new_entities_p = self.get_entites_from_chat_res(entities_p)
+
+        new_relationship_p.extend(new_entities_p)
+
+        return new_relationship_p
+
     def save_entities(self, entities: list[list[str]]) -> None:
         if not os.path.exists(self.work_dir):
             os.mkdir(self.work_dir)
@@ -139,28 +189,27 @@ class GraphRag:
         entity_rela_key = open(self.work_dir + "entity_relationship_key.jsonl", "a")
         for en in entities:
             _ = entity_rela_key.write(json.dumps(en, ensure_ascii=False) + "\n")
-            save_to_dict_concat(self.entities_vk, en)
+            self.save_to_dict_concat(en)
 
         entity_rela_key.close()
 
-    def insert(self, input: str):
-        entities = self.create_entities(input)
+    async def insert(self, input: str):
+        chat_res = await self.chat_create_entities(input)
+        entities = self.get_entites_from_chat_res(chat_res)
+        entities_p = await self.entities_polling(entities, input)
+        entities.extend(entities_p)
+
         self.on_wait_entities.extend(entities)
         self.save_entities(entities)
 
     def chat(self, question: str):
-        entities = self.create_entities(question)
+        entities = self.chat_create_entities(question)
         output = []
         for entity in entities:
             if not is_entity(entity):
                 continue
 
-            records, _, _ = self.db.execute_query(
-                QUERY["match"].format(
-                    e=entity[1].capitalize(),
-                    id=entity[2],
-                )
-            )
+            records, _, _ = self.db.execute_query(QUERY["match"].format(id=entity[2]))
 
             if len(records) == 0:
                 continue
@@ -171,7 +220,7 @@ class GraphRag:
                 output.append(record["e2.description"])
 
         prompt = PROMPT["CHAT"].format(question=question, received="\n".join(output))
-        return self.client.chat(prompt)
+        return self.client.chat(messages=[{"role": "user", "content": prompt}])
 
     def recover(self):
         remover_file = open(self.work_dir + "entity_relationship_key.jsonl")

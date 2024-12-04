@@ -3,7 +3,7 @@ PROMPT: dict[str, str] = {}
 PROMPT["EXTRACT_ENTITY_RELATIONSHIP"] = """
 Do the following:
 0. Don't write any code, only use English.
-1. Get all the entities and find out it is a location, organization, person, geo or event.
+1. Get all the entities and find out it is a location, organization, person, geo, tax, event, or any concept.
 2. Get all relationship of one entity to other entities from the input text.
 3. Return it as in the format of ("entity", ..., ...  ) for the entity type or ("relationship", ..., ....) the relationship type. Don't give any empty output. It always started with either entity or a relationship 
 
@@ -32,6 +32,7 @@ The output should be:
 
 
 This in the input text: {input_text}
+
 """
 
 PROMPT["CHAT"] = """
@@ -63,6 +64,35 @@ Information:
 {received}
 """
 
+PROMPT['RELATIONSHIP_POLLING'] = """
+Do the following:
+0. Don't write any code, only use English.
+1. Get all the entities and find out it is a location, organization, person, geo or event, ....
+2. Get all relationship of one entity to other entities from the input text.
+3. Return it as in the format of ("entity", ..., ...  ) for the entity type or ("relationship", ..., ....) the relationship type. Don't give any empty output. It always started with either entity or a relationship 
+
+Will provide you a list of relationships can you find additional entities / relationships from that
+This is the this of relationships
+{relationships}
+
+Text original text:
+{text}
+"""
+
+PROMPT['ENTITY_POLLING'] = """
+Do the following:
+0. Don't write any code, only use English.
+1. Get all the entities and find out it is a location, organization, person, geo or event, ....
+2. Get all relationship of one entity to other entities from the input text.
+3. Return it as in the format of ("entity", ..., ...  ) for the entity type or ("relationship", ..., ....) the relationship type. Don't give any empty output. It always started with either entity or a relationship 
+
+Will provide you a list of entities can you find additional entities / relationships from that
+This is the this of relationships
+{entities}
+
+Text original text:
+{text}
+"""
 
 QUERY: dict[str, str] = {}
 
@@ -76,5 +106,5 @@ CREATE (e1)-[:`{relation}` {{ description: \"{description}\", keywords: \"{keywo
 QUERY['match'] = """
 MATCH (e)-[r]-(e2)
 WHERE e.id = "{id}"
-RETURN e.description, r.description, e2.description LIMIT 500;
+RETURN e.description, r.description, e2.description LIMIT 100;
 """

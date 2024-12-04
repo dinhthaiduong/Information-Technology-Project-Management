@@ -1,3 +1,4 @@
+import asyncio
 from pathlib import Path
 from typing import Any
 from streamlit_option_menu import option_menu
@@ -52,7 +53,7 @@ def hybrid_rag():
         flag = 1
         files = st.file_uploader(
             label="Upload document",
-            type=["pdf", "json", "jsonl", "txt"],
+            type=["pdf", "json", "jsonl", "txt", "html"],
             accept_multiple_files=True,
         )
 
@@ -64,31 +65,30 @@ def hybrid_rag():
                 file_extension = file.name.split(".")[-1]
                 if file_extension == "pdf":
                     file_pdf = PdfReader(file)
-                    for idx,page in enumerate(tqdm(file_pdf.pages)):
+                    for idx, page in enumerate(tqdm(file_pdf.pages)):
                         chunks = split_text_into_chunks(page.extract_text())
                         for chunk in chunks:
-                            graph_rag.insert(chunk)
+                            asyncio.run(graph_rag.insert(chunk))
 
                         if idx % 5 == 0:
                             inserted = graph_rag.write_to_db()
                             print("Insert ", str(inserted), " value")
 
-                    inserted = graph_rag.write_to_db()
-                    print("Insert ", str(inserted), " value")
                 else:
                     content = file.read().decode()
                     chunks = split_text_into_chunks(content)
                     for idx, chunk in enumerate(tqdm(chunks)):
-                        graph_rag.insert(chunk)
-                        if idx % 50 == 0:
+                        asyncio.run(graph_rag.insert(chunk))
+                        if idx % 10 == 0:
                             inserted = graph_rag.write_to_db()
                             print("Insert ", str(inserted), " value")
 
-
+                inserted = graph_rag.write_to_db()
+                print("Insert ", str(inserted), " value")
     else:
         show_graph()
 
-    hybrid_rag = HybirdRag(graph_rag, vector_model="nomic-embed-text")
+    hybrid_rag = HybirdRag(graph_rag, vector_model="all-minilm:l6-v2", vector_save_file="vector-store-3.parquet")
 
     if uploaded:
         hybrid_rag.reload_vector_store()
@@ -111,7 +111,7 @@ def hybrid_rag():
                 _ = st.chat_message("user").markdown(message["context"])
 
             response1 = f"Echo: {prompt1}"
-            response1 = hybrid_rag.chat(prompt1)
+            response1 = asyncio.run(hybrid_rag.chat(prompt1))
 
             with st.chat_message("assistant"):
                 _ = st.markdown(response1)
