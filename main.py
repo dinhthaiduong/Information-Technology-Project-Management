@@ -88,8 +88,9 @@ def hybrid_rag():
     else:
         show_graph()
 
-    hybrid_rag = HybirdRag(graph_rag, vector_model="all-minilm:l6-v2", vector_save_file="vector-store-3.parquet")
+    hybrid_rag = HybirdRag(graph_rag, vector_save_file="vector-store-3.parquet")
 
+    hybrid_rag.reload_vector_store()
     if uploaded:
         hybrid_rag.reload_vector_store()
 

@@ -25,27 +25,27 @@ class HybirdRag:
         entities = self.graph_rag.get_entites_from_chat_res(chat_res)
 
         output = []
-        vector_entities = []
+        vector_entities: list[str] = []
 
         for entity in entities:
             if entity[0] != "entity":
                 continue
             for en in self.vector_rag.query(entity[2]):
-                vector_entities.append(en)
+                en_c = '"' + en + '"'
+                if len(vector_entities) > 1 and en_c == vector_entities[-1]:
+                    continue
 
-        for entity in vector_entities:
-            query = QUERY["match"].format(id=entity)
-            print(query)
-            records, _, _ = self.graph_rag.db.execute_query(query)
+                vector_entities.append(en_c)
 
-            if len(records) == 0:
-                continue
+        query = QUERY["match_list"].format(ids=",".join(vector_entities))
+        print(query)
+        records, _, _ = self.graph_rag.db.execute_query(query)
 
-            output.append(records[0]["e.description"])
+        output.append(records[0]["e.description"])
 
-            for record in records:
-                output.append(record["r.description"])
-                output.append(record["e2.description"])
+        for record in records:
+            output.append(record["r.description"])
+            output.append(record["e2.description"])
 
         prompt = PROMPT["CHAT"].format(question=question, received="\n".join(output))
         print(prompt)

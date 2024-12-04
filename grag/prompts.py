@@ -2,7 +2,7 @@ PROMPT: dict[str, str] = {}
 
 PROMPT["EXTRACT_ENTITY_RELATIONSHIP"] = """
 Do the following:
-0. Don't write any code, only use English.
+0. Don't write any code.
 1. Get all the entities and find out it is a location, organization, person, geo, tax, event, or any concept.
 2. Get all relationship of one entity to other entities from the input text.
 3. Return it as in the format of ("entity", ..., ...  ) for the entity type or ("relationship", ..., ....) the relationship type. Don't give any empty output. It always started with either entity or a relationship 
@@ -66,7 +66,7 @@ Information:
 
 PROMPT['RELATIONSHIP_POLLING'] = """
 Do the following:
-0. Don't write any code, only use English.
+0. Don't write any code.
 1. Get all the entities and find out it is a location, organization, person, geo or event, ....
 2. Get all relationship of one entity to other entities from the input text.
 3. Return it as in the format of ("entity", ..., ...  ) for the entity type or ("relationship", ..., ....) the relationship type. Don't give any empty output. It always started with either entity or a relationship 
@@ -81,7 +81,7 @@ Text original text:
 
 PROMPT['ENTITY_POLLING'] = """
 Do the following:
-0. Don't write any code, only use English.
+0. Don't write any code.
 1. Get all the entities and find out it is a location, organization, person, geo or event, ....
 2. Get all relationship of one entity to other entities from the input text.
 3. Return it as in the format of ("entity", ..., ...  ) for the entity type or ("relationship", ..., ....) the relationship type. Don't give any empty output. It always started with either entity or a relationship 
@@ -106,5 +106,11 @@ CREATE (e1)-[:`{relation}` {{ description: \"{description}\", keywords: \"{keywo
 QUERY['match'] = """
 MATCH (e)-[r]-(e2)
 WHERE e.id = "{id}"
-RETURN e.description, r.description, e2.description LIMIT 100;
+RETURN e.description, r.description, e2.description LIMIT 120;
+"""
+
+QUERY['match_list'] = """
+MATCH (e)-[r]-(e2)
+WHERE e.id IN [{ids}]
+RETURN DISTINCT e.description, r.description, e2.description LIMIT 120;
 """
