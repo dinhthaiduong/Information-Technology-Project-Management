@@ -74,7 +74,7 @@ CREATE (e1)-[:`{relation}` {{ description: \"{description}\", keywords: \"{keywo
 """
 
 QUERY['match'] = """
-MATCH (e:`{e}`)-[r]-(e2)
-WHERE e.id CONTAINS "{id}"
+MATCH (e)-[r]-(e2)
+WHERE e.id = "{id}"
 RETURN e.description, r.description, e2.description LIMIT 500;
 """

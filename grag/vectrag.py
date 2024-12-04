@@ -28,8 +28,8 @@ class VectorRag:
         if not os.path.exists(work_dir):
             os.mkdir(work_dir)
 
-        if os.path.exists(save_file):
-            self.vectors = pl.read_parquet(save_file)
+        if os.path.exists(self.save_file):
+            self.vectors = pl.read_parquet(self.save_file)
 
     def insert(self, text: list[str]) -> None:
         res = self.client.embed(self.model, text)

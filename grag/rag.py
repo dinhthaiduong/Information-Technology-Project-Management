@@ -68,10 +68,13 @@ def is_relationship(entity: list[str]) -> bool:
 def save_to_dict_concat(entities_vk: dict[str, list[str]], entity: list[str]):
     hash_entity = hashing_entity(entity)
     if hash_entity in entities_vk:
-        if is_entity(entity):
+        if is_entity(entity) and len(entity) > 3:
+            entity[0] = "relationship"
+            entity[1] = entity[2]
+            new_hash = hashing_entity(entity)
+            entities_vk[new_hash] = entity
+        elif len(entity) > 4:
             entities_vk[hash_entity][3] += entity[3]
-        else:
-            entities_vk[hash_entity][3] += entity[4]
     else:
         entities_vk[hash_entity] = entity
 

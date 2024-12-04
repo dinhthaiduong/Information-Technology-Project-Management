@@ -11,7 +11,7 @@ class HybirdRag:
         graph_rag: GraphRag,
         *,
         vector_model: str = "all-minilm",
-        vector_save_file: str = "entities.quarquet",
+        vector_save_file: str = "entities.parquet",
     ) -> None:
         self.graph_rag: GraphRag = graph_rag
         self.vector_rag: VectorRag = VectorRag(
@@ -30,12 +30,12 @@ class HybirdRag:
             if entity[0] == "entity"
         ]
         for entity in vector_entities:
-            records, _, _ = self.graph_rag.db.execute_query(
-                QUERY["match"].format(
+            query = QUERY["match"].format(
                     e=entity[0].capitalize(),
                     id=entity[1],
                 )
-            )
+            print(query)
+            records, _, _ = self.graph_rag.db.execute_query(query)
 
             if len(records) == 0:
                 continue

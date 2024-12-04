@@ -64,18 +64,26 @@ def hybrid_rag():
                 file_extension = file.name.split(".")[-1]
                 if file_extension == "pdf":
                     file_pdf = PdfReader(file)
-                    for page in tqdm(file_pdf.pages):
+                    for idx,page in enumerate(tqdm(file_pdf.pages)):
                         chunks = split_text_into_chunks(page.extract_text())
                         for chunk in chunks:
                             graph_rag.insert(chunk)
+
+                        if idx % 5 == 0:
+                            inserted = graph_rag.write_to_db()
+                            print("Insert ", str(inserted), " value")
 
                     inserted = graph_rag.write_to_db()
                     print("Insert ", str(inserted), " value")
                 else:
                     content = file.read().decode()
                     chunks = split_text_into_chunks(content)
-                    for chunk in chunks:
+                    for idx, chunk in enumerate(tqdm(chunks)):
                         graph_rag.insert(chunk)
+                        if idx % 50 == 0:
+                            inserted = graph_rag.write_to_db()
+                            print("Insert ", str(inserted), " value")
+
 
     else:
         show_graph()
