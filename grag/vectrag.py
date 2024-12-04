@@ -4,6 +4,8 @@ from ollama import Client
 import os
 import numpy as np
 
+from grag.prompts import QUERY
+
 
 class VectorRag:
     def __init__(
@@ -68,7 +70,7 @@ class VectorRag:
         self.vectors.write_parquet(self.save_file)
 
     def from_a_graph_db(self, db: Driver):
-        records, _, _ = db.execute_query("MATCH (n) RETURN n.id")
+        records, _, _ = db.execute_query(QUERY['match_all'])
         ids: list[str] = [record["n.id"] for record in records]
         self.insert(ids)
         self.save()

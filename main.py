@@ -90,7 +90,6 @@ def hybrid_rag():
 
     hybrid_rag = HybirdRag(graph_rag, vector_save_file="vector-store-3.parquet")
 
-    hybrid_rag.reload_vector_store()
     if uploaded:
         hybrid_rag.reload_vector_store()
 
@@ -148,7 +147,7 @@ def get_graph_data(uri: str, user: str, password: str) -> list[Record]:
     graph = GraphDatabase.driver(uri, auth=(user, password))
     query = """
     MATCH (n)-[r]->(m)
-    RETURN n,r,m
+    RETURN n,TYPE(r),m
     LIMIT 300
     """
     data, _, _ = graph.execute_query(query)
@@ -160,10 +159,11 @@ def create_networkx_graph(data: list[Record]) -> nx.DiGraph:
     for record in data:
         n = record["n"]
         m = record["m"]
-        r = record["r"]
+        r = record["TYPE(r)"]
+        print(r)
         G.add_node(n["id"], label=n["id"])
         G.add_node(m["id"], label=m["id"])
-        G.add_edge(n["id"], m["id"], label=r["type"])
+        G.add_edge(n["id"], m["id"], label=r["TYPE(r)"])
     return G
 
 

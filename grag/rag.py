@@ -189,7 +189,7 @@ class GraphRag:
         entity_rela_key = open(self.work_dir + "entity_relationship_key.jsonl", "a")
         for en in entities:
             _ = entity_rela_key.write(json.dumps(en, ensure_ascii=False) + "\n")
-            self.save_to_dict_concat(en)
+            # self.save_to_dict_concat(en)
 
         entity_rela_key.close()
 

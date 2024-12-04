@@ -10,7 +10,7 @@ class HybirdRag:
         self,
         graph_rag: GraphRag,
         *,
-        vector_model: str = "all-minilm",
+        vector_model: str = "all-minilm:l6-v2",
         vector_save_file: str = "entities.parquet",
     ) -> None:
         self.graph_rag: GraphRag = graph_rag
@@ -32,13 +32,9 @@ class HybirdRag:
                 continue
             for en in self.vector_rag.query(entity[2]):
                 en_c = '"' + en + '"'
-                if len(vector_entities) > 1 and en_c == vector_entities[-1]:
-                    continue
-
                 vector_entities.append(en_c)
 
         query = QUERY["match_list"].format(ids=",".join(vector_entities))
-        print(query)
         records, _, _ = self.graph_rag.db.execute_query(query)
 
         output.append(records[0]["e.description"])
