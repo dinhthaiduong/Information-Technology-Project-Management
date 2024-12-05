@@ -188,7 +188,7 @@ class GraphRag:
             if hash_entity in self.entities_vk:
                 self.on_wait_updating.append(entity)
                 if len(entity) > 4:
-                    self.entities_vk[str(hash(entity[2] + entity[3]))]
+                    self.entities_vk[str(hash(entity[2] + entity[3]))] = entity
             else:
                 self.entities_vk[hash_entity] = entity
 

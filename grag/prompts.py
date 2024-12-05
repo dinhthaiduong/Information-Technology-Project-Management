@@ -159,7 +159,7 @@ RETURN e.description, r.description, e2.description LIMIT 120;
 """
 
 QUERY['update'] = """
-MATCH (e {{id: '{id}'}})
+MATCH (e {{id: "{id}"}})
 SET e.description = e.description + '. ' + "{description}";
 """
 

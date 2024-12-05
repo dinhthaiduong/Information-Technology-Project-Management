@@ -70,16 +70,16 @@ async def hybrid_rag():
                 file_extension = file.name.split(".")[-1]
                 if file_extension == "pdf":
                     file_pdf = PdfReader(file)
-                    for idx, pages in enumerate(tqdm(list(batchs(file_pdf.pages, 4)))):
+                    for idx, pages in enumerate(tqdm(list(batchs(file_pdf.pages, 10)))):
                         chunks = split_text_into_chunks(
                             "\n".join([page.extract_text() for page in pages])
                         )
-                        for chunk in batchs(chunks, 10):
+                        for chunk in batchs(chunks, 100):
                             _ = await asyncio.gather(
                                 *[graph_rag.insert(text) for text in chunk]
                             )
 
-                        if idx % 2 == 0:
+                        if idx % 1 == 0:
                             inserted = graph_rag.write_to_db()
                             print("Insert ", str(inserted), " value")
 
