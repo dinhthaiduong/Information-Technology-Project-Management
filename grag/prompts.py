@@ -1,11 +1,12 @@
 PROMPT: dict[str, str] = {}
 
-PROMPT['SYSTEM_INTRUCT'] = """
+PROMPT["SYSTEM_INTRUCT"] = """
 Do the following:
 0. Don't write any code.
-1. Get all the entities and find out it is a location, organization, person, geo, tax, event, or any concept.
-2. Get all relationship of one entity to other entities from the input text.
+1. Get all the entities and find out it is a location, organization, person, geo or event, ....
+2. Get all relationship of one entity to other entities from the input text. The relationship can be any thing from help, create, friend with, a componenet of, ...
 3. Return it as in the format of ("entity", ..., ...  ) for the entity type or ("relationship", ..., ....) the relationship type. Don't give any empty output. It always started with either entity or a relationship 
+
 
 For example:
 With this input:
@@ -34,9 +35,10 @@ The output should be:
 PROMPT["EXTRACT_ENTITY_RELATIONSHIP"] = """
 Do the following:
 0. Don't write any code.
-1. Get all the entities and find out it is a location, organization, person, geo, tax, event, or any concept.
-2. Get all relationship of one entity to other entities from the input text.
+1. Get all the entities and find out it is a location, organization, person, geo or event, ....
+2. Get all relationship of one entity to other entities from the input text. The relationship can be any thing from help, create, friend with, a composenent of, or any other relationship, ... . Create as much as relationship posible.
 3. Return it as in the format of ("entity", ..., ...  ) for the entity type or ("relationship", ..., ....) the relationship type. Don't give any empty output. It always started with either entity or a relationship 
+
 
 For example:
 With this input:
@@ -99,7 +101,7 @@ PROMPT["RELATIONSHIP_POLLING"] = """
 Do the following:
 0. Don't write any code.
 1. Get all the entities and find out it is a location, organization, person, geo or event, ....
-2. Get all relationship of one entity to other entities from the input text.
+2. Get all relationship of one entity to other entities from the input text. The relationship can be any thing from help, create, friend with, ...
 3. Return it as in the format of ("entity", ..., ...  ) for the entity type or ("relationship", ..., ....) the relationship type. Don't give any empty output. It always started with either entity or a relationship 
 
 Example output:
@@ -124,7 +126,7 @@ PROMPT["ENTITY_POLLING"] = """
 Do the following:
 0. Don't write any code.
 1. Get all the entities and find out it is a location, organization, person, geo or event, ....
-2. Get all relationship of one entity to other entities from the input text.
+2. Get all relationship of one entity to other entities from the input text. The relationship can be any thing from help, create, friend with, ...
 3. Return it as in the format of ("entity", ..., ...  ) for the entity type or ("relationship", ..., ....) the relationship type. Don't give any empty output. It always started with either entity or a relationship 
 
 Example output:
@@ -160,8 +162,18 @@ WHERE e.id = "{id}"
 RETURN e.description, r.description, e2.description LIMIT 120;
 """
 
+QUERY['update'] = """
+MATCH (e {{id: '{id}'}})
+SET e.description = e.description + '. ' + "{description}";
+"""
+
+QUERY['update_edge'] = """
+MATCH (e1 {{id: "{e1}"}})-[r:`{relation}`]->(e2 {{id: "e2"}})
+SET r.description = r.description + '. ' + "{description}";
+"""
+
 QUERY["match_all"] = """
-MATCH (n) RETURN DISTINCT n.id
+MATCH (n) RETURN DISTINCT n.id;
 """
 
 QUERY["match_list"] = """

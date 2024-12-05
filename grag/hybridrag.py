@@ -37,7 +37,8 @@ class HybirdRag:
         query = QUERY["match_list"].format(ids=",".join(vector_entities))
         records, _, _ = self.graph_rag.db.execute_query(query)
 
-        output.append(records[0]["e.description"])
+        if len(records) > 0:
+            output.append(records[0]["e.description"])
 
         for record in records:
             output.append(record["r.description"])

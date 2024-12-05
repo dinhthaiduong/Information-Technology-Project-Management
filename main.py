@@ -7,7 +7,7 @@ from neo4j import GraphDatabase, Record
 import networkx as nx
 from grag.rag import GraphRag
 from grag.hybridrag import HybirdRag
-from grag.utils import RagMode, split_text_into_chunks
+from grag.utils import RagMode, batchs, split_text_into_chunks
 from dotenv import load_dotenv
 import os
 from pyvis.network import Network
@@ -23,7 +23,7 @@ load_dotenv()
 TMP_DIR = Path(__file__).resolve().parent.parent.joinpath("data", "tmp")
 
 
-def main():
+async def main():
     with st.sidebar:
         choice = option_menu("Navigation", ["Graph Rag"])
 
@@ -33,10 +33,9 @@ def main():
             st.write(
                 """Hello, I'm UET Mentor, a chatbot that will help you answer questions related to your studies at school"""
             )
-            hybrid_rag()
+            await hybrid_rag()
 
-
-def hybrid_rag():
+async def hybrid_rag():
     graph_rag = GraphRag(
         WORK_DIR,
         "openai/gpt-4o-mini",
@@ -65,21 +64,22 @@ def hybrid_rag():
                 file_extension = file.name.split(".")[-1]
                 if file_extension == "pdf":
                     file_pdf = PdfReader(file)
-                    for idx, page in enumerate(tqdm(file_pdf.pages)):
-                        chunks = split_text_into_chunks(page.extract_text())
-                        for chunk in chunks:
-                            asyncio.run(graph_rag.insert(chunk))
+                    for idx, pages in enumerate(tqdm(list(batchs(file_pdf.pages, 2)))):
+                        chunks = split_text_into_chunks("\n".join([page.extract_text() for page in pages]))
+                        for chunk in batchs(chunks, 4):
+                            _ = await asyncio.gather(*[graph_rag.insert(text) for text in chunk])
 
-                        if idx % 5 == 0:
+                        if idx % 2 == 0:
                             inserted = graph_rag.write_to_db()
                             print("Insert ", str(inserted), " value")
 
                 else:
                     content = file.read().decode()
                     chunks = split_text_into_chunks(content)
-                    for idx, chunk in enumerate(tqdm(chunks)):
-                        asyncio.run(graph_rag.insert(chunk))
-                        if idx % 10 == 0:
+                    for idx, chunk in enumerate(tqdm(list(batchs(chunks, 4)))):
+                        _ = await asyncio.gather(*[graph_rag.insert(text) for text in chunk])
+
+                        if idx % 4 == 0:
                             inserted = graph_rag.write_to_db()
                             print("Insert ", str(inserted), " value")
 
@@ -174,4 +174,4 @@ def visualize_graph(g: nx.DiGraph):
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

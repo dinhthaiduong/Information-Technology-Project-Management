@@ -70,7 +70,7 @@ class VectorRag:
         self.vectors.write_parquet(self.save_file)
 
     def from_a_graph_db(self, db: Driver):
-        records, _, _ = db.execute_query(QUERY['match_all'])
+        records, _, _ = db.execute_query(QUERY["match_all"])
         ids: list[str] = [record["n.id"] for record in records]
         self.insert(ids)
         self.save()

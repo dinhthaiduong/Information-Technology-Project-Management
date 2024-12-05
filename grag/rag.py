@@ -58,7 +58,7 @@ class ModelAddapter:
 def hashing_entity(entity: list[str]) -> str:
     if entity[0] == "relationship":
         return str(hash(entity[1] + entity[2] + entity[3]))
-    return str(hash(entity[2] + get_index_or(entity, 3, "")))
+    return str(hash(entity[2]))
 
 
 def is_entity(entity: list[str]) -> bool:
@@ -88,6 +88,7 @@ class GraphRag:
         self.on_wait_entities: list[list[str]] = []
         self.lookup_exsist_db: set[str] = set()
         self.mode: RagMode = mode
+        self.on_wait_updating: list[list[str]] = []
 
         if self.mode == RagMode.QUERY:
             return
@@ -134,19 +135,6 @@ class GraphRag:
 
         return list(filter(vaild_entity, output))
 
-    def save_to_dict_concat(self, entity: list[str]):
-        hash_entity = hashing_entity(entity)
-        if hash_entity in self.entities_vk:
-            if is_entity(entity) and len(entity) > 3:
-                entity[0] = "relationship"
-                entity[1] = entity[2]
-                new_hash = hashing_entity(entity)
-                self.entities_vk[new_hash] = entity
-            elif len(entity) > 4:
-                self.entities_vk[hash_entity][3] += entity[3]
-        else:
-            self.entities_vk[hash_entity] = entity
-
     async def entities_polling(self, entities: list[list[str]], original_text: str):
         entitites_only = [entity for entity in entities if is_entity(entity)]
         relationships_only = [
@@ -189,15 +177,24 @@ class GraphRag:
         entity_rela_key = open(self.work_dir + "entity_relationship_key.jsonl", "a")
         for en in entities:
             _ = entity_rela_key.write(json.dumps(en, ensure_ascii=False) + "\n")
-            # self.save_to_dict_concat(en)
 
         entity_rela_key.close()
+
+    def handle_duplicate_entity(self, entities: list[list[str]]) -> None:
+        for entity in entities:
+            hash_entity = hashing_entity(entity)
+            if hash_entity in self.entities_vk:
+                self.on_wait_updating.append(entity)
+            else:
+                self.entities_vk[hash_entity] = entity
 
     async def insert(self, input: str):
         chat_res = await self.chat_create_entities(input)
         entities = self.get_entites_from_chat_res(chat_res)
         entities_p = await self.entities_polling(entities, input)
+
         entities.extend(entities_p)
+        self.handle_duplicate_entity(entities)
 
         self.on_wait_entities.extend(entities)
         self.save_entities(entities)
@@ -247,8 +244,8 @@ class GraphRag:
 
             query.append(
                 QUERY["relationship"].format(
-                    e1=entity[2],
-                    e2=entity[1],
+                    e1=entity[1],
+                    e2=entity[2],
                     relation=relations,
                     description=get_index_or(entity, 3, ""),
                     keywords=get_index_or(entity, 4, ""),
@@ -256,6 +253,16 @@ class GraphRag:
             )
 
         return query
+
+    def update_query(self, entity: list[str]) -> str:
+        if is_entity(entity):
+            return QUERY["update"].format(
+                id=entity[2].capitalize(), description=get_index_or(entity, 3, "")
+            )
+        relation = extract_verbs(entity[3])
+        return QUERY["update_edge"].format(
+            e1=entity[1], e2=entity[2], relation=relation, description=entity[3]
+        )
 
     def write_to_db(self) -> int:
         query_log_file = open(self.work_dir + "query.log", "a")
@@ -277,12 +284,18 @@ class GraphRag:
                 _ = query_log_file.write(query)
                 _ = self.db.execute_query(query)
 
+        for entity in self.on_wait_updating:
+            query = self.update_query(entity)
+            _ = query_log_file.write(query)
+            _ = self.db.execute_query(query)
+
         saved_entity = open(self.work_dir + "saved-db.txt", "a")
         for new in new_written:
             _ = saved_entity.write(new + "\n")
 
         saved_entity.close()
 
+        self.on_wait_updating = []
         self.on_wait_entities = []
         query_log_file.close()
         entities_vk_file = open(self.work_dir + "kv_entity_relationship.json", "w")

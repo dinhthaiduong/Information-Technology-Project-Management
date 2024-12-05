@@ -1,13 +1,19 @@
 from enum import Enum
-from typing import Any
+from typing import Any, TypeVar
 from nltk import sent_tokenize, word_tokenize, pos_tag
 from nltk.stem import WordNetLemmatizer
 import numpy as np
+
 
 class RagMode(Enum):
     Create = "create"
     QUERY = "query"
 
+
+T = TypeVar('T')
+def batchs(lst: list[T], n: int):
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
 
 def split_text_into_chunks(text: str, max_length: int = 4000) -> list[str]:
     sentences = sent_tokenize(text)
@@ -26,11 +32,18 @@ def split_text_into_chunks(text: str, max_length: int = 4000) -> list[str]:
 
     return chunks
 
+
 lemmatizer = WordNetLemmatizer()
+
+
 def extract_verbs(sentence: str) -> str:
     tokens = word_tokenize(sentence)
     tagged = pos_tag(tokens)
-    verbs = [lemmatizer.lemmatize(word, pos='v').upper() for word, tag in tagged if tag.startswith("VB")]
+    verbs = [
+        lemmatizer.lemmatize(word, pos="v").upper()
+        for word, tag in tagged
+        if tag.startswith("VB")
+    ]
     if len(verbs) == 0:
         return "RELATED"
 
@@ -42,6 +55,7 @@ def get_index_or(array: list[Any], idx: int, default: Any) -> Any:
         return array[idx]
     except:
         return default
+
 
 def get_index(array: list[Any], idx: int) -> Any | None:
     try:
