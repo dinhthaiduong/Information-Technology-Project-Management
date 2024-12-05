@@ -123,7 +123,7 @@ async def hybrid_rag():
                 _ = st.chat_message("user").markdown(message["context"])
 
             response1 = f"Echo: {prompt1}"
-            response1, _ = asyncio.run(hybrid_rag.chat(prompt1))
+            response1, _ = await hybrid_rag.chat(prompt1)
 
             with st.chat_message("assistant"):
                 _ = st.markdown(response1)
