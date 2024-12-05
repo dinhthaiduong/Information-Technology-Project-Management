@@ -8,7 +8,7 @@ from .prompts import PROMPT, QUERY
 import os
 import json
 from neo4j import Driver, GraphDatabase
-from .utils import RagMode, extract_verbs, get_index_or
+from .utils import RagMode, extract_verbs, get_index_or, normalize_db_string
 
 regrex_input = re.compile(r"\[(.*)\]", re.DOTALL)
 
@@ -20,6 +20,7 @@ def vaild_entity(entity: list[str]) -> bool:
         return False
 
     return True
+
 
 @dataclass
 class ModelAddapter:
@@ -133,7 +134,8 @@ class GraphRag:
                 entites = re.findall(r"\((.*)\)", entity)
                 for entity in entites:
                     splited = re.findall(r'"([^"]*)"', entity)
-                    output.append([a for a in splited])
+                    normarlized = [normalize_db_string(text) for text in splited]
+                    output.append(normarlized)
 
         return list(filter(vaild_entity, output))
 
@@ -261,9 +263,9 @@ class GraphRag:
     def update_query(self, entity: list[str]) -> str:
         if is_entity(entity):
             return QUERY["update"].format(
-                id=entity[2].capitalize(), description=get_index_or(entity, 3, "")
+                id=entity[2].capitalize(), description=get_index_or(entity, 3, ""),
             )
-        relation = extract_verbs(entity[3])
+        relation = extract_verbs(entity[3]),
         return QUERY["update_edge"].format(
             e1=entity[1], e2=entity[2], relation=relation, description=entity[3]
         )

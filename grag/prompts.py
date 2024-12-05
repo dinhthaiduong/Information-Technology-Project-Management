@@ -1,4 +1,6 @@
-PROMPT: dict[str, str] = {}
+PROMPT: dict[str, str | list[str]] = {}
+
+PROMPT['SPECIAL_CHARS'] = ["\\", '"']
 
 PROMPT["SYSTEM_INTRUCT"] = """
 Do the following:
@@ -37,7 +39,8 @@ Do the following:
 0. Don't write any code.
 1. Get all the entities and find out it is a location, organization, person, geo or event, ....
 2. Get all relationship of one entity to other entities from the input text. The relationship can be any thing from help, create, friend with, a composenent of, or any other relationship, ... . Create as much as relationship posible.
-3. Return it as in the format of ("entity", ..., ...  ) for the entity type or ("relationship", ..., ....) the relationship type. Don't give any empty output. It always started with either entity or a relationship 
+3. Return it as in the format of ("entity", ..., ...  ) for the entity type or ("relationship", ..., ....) the relationship type. Don't give any empty output. It always started with either entity or a relationship.
+4. Minimize amount of entities that don't have any relattionship.
 
 
 For example:
@@ -103,6 +106,7 @@ Do the following:
 1. Get all the entities and find out it is a location, organization, person, geo or event, ....
 2. Get all relationship of one entity to other entities from the input text. The relationship can be any thing from help, create, friend with, ...
 3. Return it as in the format of ("entity", ..., ...  ) for the entity type or ("relationship", ..., ....) the relationship type. Don't give any empty output. It always started with either entity or a relationship 
+4. Minimize amount of entities that don't have any relattionship.
 
 Example output:
 [
@@ -126,6 +130,7 @@ Do the following:
 1. Get all the entities and find out it is a location, organization, person, geo or event, ....
 2. Get all relationship of one entity to other entities from the input text. The relationship can be any thing from help, create, friend with, ...
 3. Return it as in the format of ("entity", ..., ...  ) for the entity type or ("relationship", ..., ....) the relationship type. Don't give any empty output. It always started with either entity or a relationship 
+4. Minimize amount of entities that don't have any relattionship.
 
 Example output:
 [

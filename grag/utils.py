@@ -3,6 +3,9 @@ from typing import Any, TypeVar
 from nltk import sent_tokenize, word_tokenize, pos_tag
 from nltk.stem import WordNetLemmatizer
 import numpy as np
+import re
+
+from grag.prompts import PROMPT
 
 
 class RagMode(Enum):
@@ -33,8 +36,12 @@ def split_text_into_chunks(text: str, max_length: int = 4000) -> list[str]:
     return chunks
 
 
-lemmatizer = WordNetLemmatizer()
+normalize_db_string_pattern = re.compile('[' + re.escape(''.join(PROMPT["SPECIAL_CHARS"])) + ']')
+def normalize_db_string(text: str):
+    return normalize_db_string_pattern.sub('', text).strip()
 
+
+lemmatizer = WordNetLemmatizer()
 
 def extract_verbs(sentence: str) -> str:
     tokens = word_tokenize(sentence)

@@ -1,1 +1,1 @@
-{"cmd": "\nvec_rag.query(\"boulez\")\n# vec_rag.\n# vec_rag.vectors\n# vec_rag.query(\"\")\n# gc\n", "cmd_opts": " --cell_id=59DNQedlWD -s", "import_complete": 1, "terminal": "nvimterm"}
+{"cmd": "\nnormalize_db_string(\"dsf\\\\sfff \"\"\")", "cmd_opts": " --cell_id=okSZzl8y6Y -s", "import_complete": 1, "terminal": "nvimterm"}

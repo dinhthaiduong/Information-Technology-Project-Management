@@ -66,6 +66,7 @@ async def hybrid_rag():
             _ = st.warning("Please upload a document")
         else:
             uploaded = True
+            count = 0
             for file in files:
                 file_extension = file.name.split(".")[-1]
                 if file_extension == "pdf":
@@ -87,6 +88,9 @@ async def hybrid_rag():
                     content = file.read().decode()
                     chunks = split_text_into_chunks(content)
                     for idx, chunk in enumerate(tqdm(list(batchs(chunks, 10)))):
+                        # if count < 132:
+                        #     count += 1
+                        #     continue
                         _ = await asyncio.gather(
                             *[graph_rag.insert(text) for text in chunk]
                         )
@@ -105,7 +109,7 @@ async def hybrid_rag():
     if uploaded:
         hybrid_rag.reload_vector_store()
 
-    st.session_state.messages1: list[Any] = []
+    st.session_state.messages1 = []
     # Initialize chat history
     if "messages" not in st.session_state:
         st.session_state.messages1 = []
