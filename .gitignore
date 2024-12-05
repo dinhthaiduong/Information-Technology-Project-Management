@@ -1,0 +1,12 @@
+*__pycache__*
+.dicken/
+.embed/
+tmp*.pdf
+tmp*.docx
+*.env
+*vectorestore_raking*
+.venv
+lib
+graph.html
+read-data.py
+examples/checking_inputs.json
