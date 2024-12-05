@@ -118,8 +118,6 @@ Will provide you a list of relationships can you find additional entities / rela
 This is the this of relationships
 {relationships}
 
-Text original text:
-{text}
 """
 
 PROMPT["ENTITY_POLLING"] = """
@@ -141,8 +139,6 @@ Will provide you a list of entities can you find additional entities / relations
 This is the this of relationships
 {entities}
 
-Text original text:
-{text}
 """
 
 QUERY: dict[str, str] = {}

@@ -147,7 +147,7 @@ class GraphRag:
                     {
                         "role": "user",
                         "content": PROMPT["RELATIONSHIP_POLLING"].format(
-                            relationships=relationships_only, text=original_text
+                            relationships=relationships_only
                         ),
                     }
                 ]
@@ -157,7 +157,7 @@ class GraphRag:
                     {
                         "role": "user",
                         "content": PROMPT["ENTITY_POLLING"].format(
-                            entities=entitites_only, text=original_text
+                            entities=entitites_only
                         ),
                     }
                 ]
