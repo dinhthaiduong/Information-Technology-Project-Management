@@ -11,7 +11,7 @@ services:
       - '7687:7687'
 
     env_file:
-      - path: neo4j.env
+      - path: .env
         required: true
 
     volumes:

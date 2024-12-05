@@ -15,12 +15,18 @@ import streamlit.components.v1 as components
 from pypdf import PdfReader
 from tqdm import tqdm
 
-
 header = st.container()
-WORK_DIR = ".embed/"
+
 _ = load_dotenv()
 
+WORK_DIR = ".embed/"
+NEO4J_AUTH = os.getenv("NEO4J_AUTH") or "neo4j/password"
+NEO4J_USER, NEO4J_PASSWORD = NEO4J_AUTH.split("/")
+os.environ["NEO4J_USER"] = NEO4J_USER
+os.environ["NEO4J_PASSWORD"] = NEO4J_PASSWORD
+
 TMP_DIR = Path(__file__).resolve().parent.parent.joinpath("data", "tmp")
+
 
 async def main():
     with st.sidebar:

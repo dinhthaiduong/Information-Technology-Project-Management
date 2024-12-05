@@ -14,6 +14,17 @@ streamlit run <namefile.py>
 uv sync
 ```
 
+## Add .env file
+```sh
+cp env.example .env
+```
+
+## Get text embedding model:
+```sh
+ollama pull all-minilm:l6-v2
+ollama pull llama3.2 
+```
+
 ## Activate virtual enviroment:
 ```sh
 source .venv/bin/activate
