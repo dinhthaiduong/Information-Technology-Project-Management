@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import re
 from typing import Any, Mapping, Sequence
 from ollama import AsyncClient as Ollama, Message
@@ -20,7 +21,7 @@ def vaild_entity(entity: list[str]) -> bool:
 
     return True
 
-
+@dataclass
 class ModelAddapter:
     def __init__(self, model: str, *, host: str = "http://localhost:11434") -> None:
         provider, model = model.split("/")
@@ -69,6 +70,7 @@ def is_relationship(entity: list[str]) -> bool:
     return entity[0] == "relationship"
 
 
+@dataclass
 class GraphRag:
     def __init__(
         self,
@@ -185,6 +187,8 @@ class GraphRag:
             hash_entity = hashing_entity(entity)
             if hash_entity in self.entities_vk:
                 self.on_wait_updating.append(entity)
+                if len(entity) > 4:
+                    self.entities_vk[str(hash(entity[2] + entity[3]))]
             else:
                 self.entities_vk[hash_entity] = entity
 

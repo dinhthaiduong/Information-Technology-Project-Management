@@ -3,10 +3,11 @@ import polars as pl
 from ollama import Client
 import os
 import numpy as np
+from dataclasses import dataclass
 
 from grag.prompts import QUERY
 
-
+@dataclass
 class VectorRag:
     def __init__(
         self,

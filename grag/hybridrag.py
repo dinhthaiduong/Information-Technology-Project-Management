@@ -1,10 +1,10 @@
+from dataclasses import dataclass
 from grag.prompts import PROMPT, QUERY
 from grag.rag import GraphRag
 from grag.vectrag import VectorRag
-from grag.utils import get_index_or
 import os
 
-
+@dataclass
 class HybirdRag:
     def __init__(
         self,
@@ -20,7 +20,7 @@ class HybirdRag:
         if not os.path.exists(graph_rag.work_dir + vector_save_file):
             self.vector_rag.from_a_graph_db(graph_rag.db)
 
-    async def chat(self, question: str) -> str:
+    async def chat(self, question: str) -> tuple[str, list[str]]:
         chat_res = await self.graph_rag.chat_create_entities(question)
         entities = self.graph_rag.get_entites_from_chat_res(chat_res)
 
@@ -45,9 +45,8 @@ class HybirdRag:
             output.append(record["e2.description"])
 
         prompt = PROMPT["CHAT"].format(question=question, received="\n".join(output))
-        print(prompt)
 
-        return await self.graph_rag.client.chat([{"role": "user", "content": prompt}])
+        return await self.graph_rag.client.chat([{"role": "user", "content": prompt}]), vector_entities
 
     def reload_vector_store(self):
         self.vector_rag.from_a_graph_db(self.graph_rag.db)

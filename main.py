@@ -18,10 +18,9 @@ from tqdm import tqdm
 
 header = st.container()
 WORK_DIR = ".embed/"
-load_dotenv()
+_ = load_dotenv()
 
 TMP_DIR = Path(__file__).resolve().parent.parent.joinpath("data", "tmp")
-
 
 async def main():
     with st.sidebar:
@@ -34,6 +33,7 @@ async def main():
                 """Hello, I'm UET Mentor, a chatbot that will help you answer questions related to your studies at school"""
             )
             await hybrid_rag()
+
 
 async def hybrid_rag():
     graph_rag = GraphRag(
@@ -65,9 +65,13 @@ async def hybrid_rag():
                 if file_extension == "pdf":
                     file_pdf = PdfReader(file)
                     for idx, pages in enumerate(tqdm(list(batchs(file_pdf.pages, 2)))):
-                        chunks = split_text_into_chunks("\n".join([page.extract_text() for page in pages]))
+                        chunks = split_text_into_chunks(
+                            "\n".join([page.extract_text() for page in pages])
+                        )
                         for chunk in batchs(chunks, 4):
-                            _ = await asyncio.gather(*[graph_rag.insert(text) for text in chunk])
+                            _ = await asyncio.gather(
+                                *[graph_rag.insert(text) for text in chunk]
+                            )
 
                         if idx % 2 == 0:
                             inserted = graph_rag.write_to_db()
@@ -77,7 +81,9 @@ async def hybrid_rag():
                     content = file.read().decode()
                     chunks = split_text_into_chunks(content)
                     for idx, chunk in enumerate(tqdm(list(batchs(chunks, 4)))):
-                        _ = await asyncio.gather(*[graph_rag.insert(text) for text in chunk])
+                        _ = await asyncio.gather(
+                            *[graph_rag.insert(text) for text in chunk]
+                        )
 
                         if idx % 4 == 0:
                             inserted = graph_rag.write_to_db()
@@ -88,7 +94,7 @@ async def hybrid_rag():
     else:
         show_graph()
 
-    hybrid_rag = HybirdRag(graph_rag, vector_save_file="vector-store-3.parquet")
+    hybrid_rag = HybirdRag(graph_rag)
 
     if uploaded:
         hybrid_rag.reload_vector_store()
@@ -111,7 +117,7 @@ async def hybrid_rag():
                 _ = st.chat_message("user").markdown(message["context"])
 
             response1 = f"Echo: {prompt1}"
-            response1 = asyncio.run(hybrid_rag.chat(prompt1))
+            response1, _ = asyncio.run(hybrid_rag.chat(prompt1))
 
             with st.chat_message("assistant"):
                 _ = st.markdown(response1)
