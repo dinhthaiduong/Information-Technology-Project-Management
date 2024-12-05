@@ -70,11 +70,11 @@ async def hybrid_rag():
                 file_extension = file.name.split(".")[-1]
                 if file_extension == "pdf":
                     file_pdf = PdfReader(file)
-                    for idx, pages in enumerate(tqdm(list(batchs(file_pdf.pages, 2)))):
+                    for idx, pages in enumerate(tqdm(list(batchs(file_pdf.pages, 4)))):
                         chunks = split_text_into_chunks(
                             "\n".join([page.extract_text() for page in pages])
                         )
-                        for chunk in batchs(chunks, 4):
+                        for chunk in batchs(chunks, 10):
                             _ = await asyncio.gather(
                                 *[graph_rag.insert(text) for text in chunk]
                             )
@@ -86,7 +86,7 @@ async def hybrid_rag():
                 else:
                     content = file.read().decode()
                     chunks = split_text_into_chunks(content)
-                    for idx, chunk in enumerate(tqdm(list(batchs(chunks, 4)))):
+                    for idx, chunk in enumerate(tqdm(list(batchs(chunks, 10)))):
                         _ = await asyncio.gather(
                             *[graph_rag.insert(text) for text in chunk]
                         )

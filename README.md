@@ -46,8 +46,9 @@ streamlit run main.py
 
 ## Run evaluation:
 ```sh
-uv python eval/create_eval_data.py
-uv python eval/ragcheck.py
+python eval/create_eval_data.py
+python eval/ragcheck_eval.py
+python eval/ragas_eval.py
 ```
 
 
