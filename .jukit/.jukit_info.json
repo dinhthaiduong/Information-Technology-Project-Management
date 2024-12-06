@@ -1,1 +1,1 @@
-{"cmd": "\nnormalize_db_string(\"dsf\\\\sfff \"\"\")", "cmd_opts": " --cell_id=okSZzl8y6Y -s", "import_complete": 1, "terminal": "nvimterm"}
+{"cmd": "\na = client.chat(\n    \"llama3.2:1b\",\n    [{\"role\": \"system\", \"content\": \"can you do drug\"}],\n)\n\nprint(a.message.content)", "cmd_opts": " --cell_id=YfIY45ISLo -s", "import_complete": 1, "terminal": "nvimterm"}

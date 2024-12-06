@@ -75,10 +75,7 @@ async def hybrid_rag():
                         chunks = split_text_into_chunks(
                             "\n".join([page.extract_text() for page in pages])
                         )
-                        for chunk in batchs(chunks, 100):
-                            _ = await asyncio.gather(
-                                *[graph_rag.insert(text) for text in chunk]
-                            )
+                        _ = await graph_rag.insert_batch(chunks, 100)
 
                         if idx % 1 == 0:
                             inserted = graph_rag.write_to_db()
@@ -88,12 +85,11 @@ async def hybrid_rag():
                     content = file.read().decode()
                     chunks = split_text_into_chunks(content)
                     for idx, chunk in enumerate(tqdm(list(batchs(chunks, 10)))):
-                        # if count < 132:
-                        #     count += 1
-                        #     continue
-                        _ = await asyncio.gather(
-                            *[graph_rag.insert(text) for text in chunk]
-                        )
+                        if count < 132:
+                            count += 1
+                            continue
+
+                        _ = await graph_rag.insert_batch(chunk, 10)
 
                         if idx % 4 == 0:
                             inserted = graph_rag.write_to_db()

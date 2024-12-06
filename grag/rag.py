@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 import re
-from typing import Any, Mapping, Sequence
+from typing import Any, Iterable, Mapping, Sequence
 from ollama import AsyncClient as Ollama, Message
 import asyncio
 from openai import AsyncClient as OpenAI
@@ -8,7 +8,8 @@ from .prompts import PROMPT, QUERY
 import os
 import json
 from neo4j import Driver, GraphDatabase
-from .utils import RagMode, extract_verbs, get_index_or, normalize_db_string
+from .utils import RagMode, extract_verbs, get_index_or, normalize_db_string, batchs
+
 
 regrex_input = re.compile(r"\[(.*)\]", re.DOTALL)
 
@@ -36,7 +37,7 @@ class ModelAddapter:
             raise ValueError("invaid provider")
 
     async def chat(
-        self, messages: Sequence[Mapping[str, Any] | Message], *, stream: bool = False
+        self, messages: Iterable[Mapping[str, Any] | Message], *, stream: bool = False
     ) -> str:
         if self.provider == "ollama":
             chat_res = await self.client.chat(
@@ -205,7 +206,11 @@ class GraphRag:
         self.on_wait_entities.extend(entities)
         self.save_entities(entities)
 
-    def chat(self, question: str):
+    async def insert_batch(self, inputs: list[str], batch: int = 4):
+        for batch_inputs in batchs(inputs, batch):
+            _ = await asyncio.gather(*[self.insert(input) for input in batch_inputs])
+
+    async def chat(self, question: str) -> str:
         entities = self.chat_create_entities(question)
         output = []
         for entity in entities:
@@ -223,7 +228,17 @@ class GraphRag:
                 output.append(record["e2.description"])
 
         prompt = PROMPT["CHAT"].format(question=question, received="\n".join(output))
-        return self.client.chat(messages=[{"role": "user", "content": prompt}])
+        return await self.client.chat(messages=[{"role": "user", "content": prompt}])
+
+    async def chat_batch(self, questions: list[str], batch: int = 4) -> list[str]:
+        output = []
+        for batch_questions in batchs(questions, batch):
+            res = await asyncio.gather(
+                *[self.chat(question) for question in batch_questions]
+            )
+            output.extend(res)
+
+        return output
 
     def recover(self):
         remover_file = open(self.work_dir + "entity_relationship_key.jsonl")
@@ -263,9 +278,10 @@ class GraphRag:
     def update_query(self, entity: list[str]) -> str:
         if is_entity(entity):
             return QUERY["update"].format(
-                id=entity[2].capitalize(), description=get_index_or(entity, 3, ""),
+                id=entity[2].capitalize(),
+                description=get_index_or(entity, 3, ""),
             )
-        relation = extract_verbs(entity[3]),
+        relation = (extract_verbs(entity[3]),)
         return QUERY["update_edge"].format(
             e1=entity[1], e2=entity[2], relation=relation, description=entity[3]
         )
