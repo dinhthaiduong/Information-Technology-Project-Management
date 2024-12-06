@@ -4,8 +4,8 @@ from ollama import Client
 import os
 import numpy as np
 from dataclasses import dataclass
-
 from grag.prompts import QUERY
+
 
 @dataclass
 class VectorRag:
@@ -29,7 +29,11 @@ class VectorRag:
                 "text": [],
                 "embed": [],
             },
-            schema={"index": pl.UInt64, "text": pl.String, "embed": pl.Array(pl.Float64, embed_len)},
+            schema={
+                "index": pl.UInt64,
+                "text": pl.String,
+                "embed": pl.Array(pl.Float64, embed_len),
+            },
             # schema={"text": pl.String, "embed": pl.List(pl.Float64)},
         )
         if not os.path.exists(work_dir):
@@ -38,13 +42,13 @@ class VectorRag:
         if os.path.exists(self.save_file):
             self.vectors = pl.read_parquet(self.save_file)
 
-    def insert(self, text: list[str]) -> None:
+    def insert(self, text: list[str] | pl.Series) -> None:
         res = self.client.embed(self.model, text)
         rows_len = self.vectors.shape[0]
         self.vectors = self.vectors.extend(
             pl.DataFrame(
                 {
-                    "index": list(range(rows_len, rows_len + len(text))),
+                    "index": pl.Series(range(rows_len, rows_len + len(text)), dtype=pl.UInt64),
                     "text": text,
                     "embed": [
                         embed / np.linalg.norm(embed)
@@ -68,7 +72,9 @@ class VectorRag:
             }
         ).top_k(5, by=pl.col("cosine"))
 
-        selected_text = self.vectors.filter(self.vectors['index'].is_in(query_df["index"]))['text']
+        selected_text = self.vectors["text"].filter(
+            self.vectors["index"].is_in(query_df["index"])
+        )
 
         return selected_text.to_list()
 
@@ -79,7 +85,9 @@ class VectorRag:
         records, _, _ = db.execute_query(QUERY["match_all"])
         ids: list[str] = [record["n.id"] for record in records]
         ids_series = pl.Series(ids, dtype=pl.String)
-        ids_unique = ids_series.filter(ids_series.is_in(self.vectors['text']).not_())
+        ids_unique = ids_series.filter(
+            ids_series.is_in(self.vectors["text"]).not_()
+        ).to_list()
 
-        self.insert(ids_unique.to_list())
+        self.insert(ids_unique)
         self.save()

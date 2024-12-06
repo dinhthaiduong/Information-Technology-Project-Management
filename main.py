@@ -43,7 +43,8 @@ async def main():
 async def hybrid_rag():
     graph_rag = GraphRag(
         WORK_DIR,
-        "openai/gpt-4o-mini",
+        # "openai/gpt-4o-mini",
+        "ollama/llama3.2",
         os.getenv("BOLT_URI") or "bolt://localhost:7687",
         (os.getenv("NEO4J_USER") or "", os.getenv("NEO4J_PASSWORD") or ""),
         mode=RagMode.Create,
@@ -70,7 +71,10 @@ async def hybrid_rag():
                 file_extension = file.name.split(".")[-1]
                 if file_extension == "pdf":
                     file_pdf = PdfReader(file)
-                    for idx, pages in enumerate(tqdm(list(batchs(file_pdf.pages, 10)))):
+                    total = float(len(file_pdf.pages)) / 10
+                    for idx, pages in enumerate(
+                        tqdm(batchs(file_pdf.pages, 10), total=total)
+                    ):
                         chunks = split_text_into_chunks(
                             "\n".join([page.extract_text() for page in pages])
                         )
@@ -83,7 +87,8 @@ async def hybrid_rag():
                 else:
                     content = file.read().decode()
                     chunks = split_text_into_chunks(content)
-                    for idx, chunk in enumerate(tqdm(list(batchs(chunks, 10)))):
+                    total = float(len(chunks)) / 10
+                    for idx, chunk in enumerate(tqdm(batchs(chunks, 10), total=total)):
                         if count < 132:
                             count += 1
                             continue
@@ -101,6 +106,7 @@ async def hybrid_rag():
 
     hybrid_rag = HybirdRag(graph_rag)
 
+    hybrid_rag.reload_vector_store()
     if uploaded:
         hybrid_rag.reload_vector_store()
 
@@ -171,10 +177,10 @@ def create_networkx_graph(data: list[Record]) -> nx.DiGraph:
         n = record["n"]
         m = record["m"]
         r = record["TYPE(r)"]
-        print(r)
+
         G.add_node(n["id"], label=n["id"])
         G.add_node(m["id"], label=m["id"])
-        G.add_edge(n["id"], m["id"], label=r["TYPE(r)"])
+        G.add_edge(n["id"], m["id"], label=r)
     return G
 
 

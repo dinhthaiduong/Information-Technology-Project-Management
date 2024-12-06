@@ -34,7 +34,7 @@ class HybirdRag:
                 en_c = '"' + en + '"'
                 vector_entities.append(en_c)
 
-        query = QUERY["match_list"].format(ids=",".join(vector_entities).replace('"', "'"))
+        query = QUERY["match_list"].format(ids=",".join(vector_entities))
         records, _, _ = self.graph_rag.db.execute_query(query)
 
         if len(records) > 0:
