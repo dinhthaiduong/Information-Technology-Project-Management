@@ -1,0 +1,1 @@
+{"cmd": "\nvec_rag.query(\"wild rice\")\n", "cmd_opts": " --cell_id=59DNQedlWD -s", "import_complete": 1, "terminal": "nvimterm"}
