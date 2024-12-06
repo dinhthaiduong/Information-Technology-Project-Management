@@ -25,10 +25,11 @@ class VectorRag:
         self.embed_len: int = embed_len
         self.vectors: pl.DataFrame = pl.DataFrame(
             {
+                "index": [],
                 "text": [],
                 "embed": [],
             },
-            schema={"text": pl.String, "embed": pl.Array(pl.Float64, embed_len)},
+            schema={"index": pl.UInt64, "text": pl.String, "embed": pl.Array(pl.Float64, embed_len)},
             # schema={"text": pl.String, "embed": pl.List(pl.Float64)},
         )
         if not os.path.exists(work_dir):
@@ -39,10 +40,11 @@ class VectorRag:
 
     def insert(self, text: list[str]) -> None:
         res = self.client.embed(self.model, text)
-
+        rows_len = self.vectors.shape[0]
         self.vectors = self.vectors.extend(
             pl.DataFrame(
                 {
+                    "index": list(range(rows_len, rows_len + len(text))),
                     "text": text,
                     "embed": [
                         embed / np.linalg.norm(embed)
@@ -58,14 +60,17 @@ class VectorRag:
         vector = self.vectors["embed"]
         query_df = pl.DataFrame(
             {
-                "text": self.vectors["text"],
+                "index": self.vectors["index"],
                 "cosine": vector.map_elements(
                     lambda other: embed.dot(np.array(other)),  # cosine similality
                     return_dtype=pl.Float64,
                 ),
             }
         ).top_k(5, by=pl.col("cosine"))
-        return query_df["text"].to_list()
+
+        selected_text = self.vectors.filter(self.vectors['index'].is_in(query_df["index"]))['text']
+
+        return selected_text.to_list()
 
     def save(self) -> None:
         self.vectors.write_parquet(self.save_file)
@@ -73,5 +78,8 @@ class VectorRag:
     def from_a_graph_db(self, db: Driver):
         records, _, _ = db.execute_query(QUERY["match_all"])
         ids: list[str] = [record["n.id"] for record in records]
-        self.insert(ids)
+        ids_series = pl.Series(ids, dtype=pl.String)
+        ids_unique = ids_series.filter(ids_series.is_in(self.vectors['text']).not_())
+
+        self.insert(ids_unique.to_list())
         self.save()

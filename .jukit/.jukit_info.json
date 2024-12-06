@@ -1,1 +1,1 @@
-{"cmd": "\na = client.chat(\n    \"llama3.2:1b\",\n    [{\"role\": \"system\", \"content\": \"can you do drug\"}],\n)\n\nprint(a.message.content)", "cmd_opts": " --cell_id=YfIY45ISLo -s", "import_complete": 1, "terminal": "nvimterm"}
+{"cmd": "\nvec_rag.query(\"law\")\n\n# vec_rag.\n# vec_rag.vectors\n# vec_rag.query(\"\")\n# gc\n# normalize_db_string(\"dsf\\\\sfff \"\"\")\n", "cmd_opts": " --cell_id=59DNQedlWD -s", "import_complete": 1, "terminal": "nvimterm"}

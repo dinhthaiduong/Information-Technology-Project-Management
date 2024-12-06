@@ -1,6 +1,5 @@
 import asyncio
 from pathlib import Path
-from typing import Any
 from streamlit_option_menu import option_menu
 import streamlit as st
 from neo4j import GraphDatabase, Record
@@ -50,7 +49,7 @@ async def hybrid_rag():
         mode=RagMode.Create,
     )
 
-    choice = option_menu("Options", ["Upload document", "Graph(Skip document upload)"])
+    choice = option_menu("Options", ["Upload document", "Chat"])
     flag = 0
 
     uploaded = False
