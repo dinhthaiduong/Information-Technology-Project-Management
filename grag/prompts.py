@@ -54,7 +54,7 @@ Remember to:
 
 Be specific: Clearly outline the task and any specific guidelines.
 Provide context: If necessary, provide additional context or background information.
-Set expectations: Clarify the desired format and level of detail in the response.
+Set expectations: Clarify the desired format and level of detail in the response. Answer be the language in the question
 
 Answer this question:
 {question}
@@ -76,5 +76,5 @@ CREATE (e1)-[:`{relation}` {{ description: \"{description}\", keywords: \"{keywo
 QUERY['match'] = """
 MATCH (e:`{e}`)-[r]-(e2)
 WHERE e.id CONTAINS "{id}"
-RETURN e.description, r.description, e2.description LIMIT 20;
+RETURN e.description, r.description, e2.description LIMIT 500;
 """

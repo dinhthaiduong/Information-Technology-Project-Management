@@ -1,16 +1,21 @@
 from grag.prompts import PROMPT, QUERY
 from grag.rag import GraphRag
 from grag.vectrag import VectorRag
+from grag.utils import get_index_or
 import os
 
 
 class HybirdRag:
     def __init__(
-        self, graph_rag: GraphRag, vector_save_file: str = "entities.quarquet"
+        self,
+        graph_rag: GraphRag,
+        *,
+        vector_model: str = "all-minilm",
+        vector_save_file: str = "entities.quarquet",
     ) -> None:
         self.graph_rag: GraphRag = graph_rag
         self.vector_rag: VectorRag = VectorRag(
-            graph_rag.work_dir, save_file=vector_save_file
+            graph_rag.work_dir, save_file=vector_save_file, model=vector_model
         )
         if not os.path.exists(graph_rag.work_dir + vector_save_file):
             self.vector_rag.from_a_graph_db(graph_rag.db)
@@ -20,7 +25,7 @@ class HybirdRag:
 
         output = []
         vector_entities = [
-            (entity[1], self.vector_rag.query(entity[2])[0])
+            (entity[1], get_index_or(self.vector_rag.query(entity[2]), 0, ""))
             for entity in entities
             if entity[0] == "entity"
         ]
@@ -45,4 +50,5 @@ class HybirdRag:
 
         return self.graph_rag.client.chat(prompt)
 
-        pass
+    def reload_vector_store(self):
+        self.vector_rag.from_a_graph_db(self.graph_rag.db)

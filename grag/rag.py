@@ -100,7 +100,7 @@ class GraphRag:
             return
 
         if os.path.exists(work_dir + "kv_entity_relationship.json"):
-            with open(work_dir + "kv_entity_relationship.json", "r") as save_f:
+            with open(work_dir + "kv_entity_relationship.json", "r", encoding='utf-8') as save_f:
                 self.entities_vk = json.load(save_f) or {}
                 save_f.close()
 
@@ -135,7 +135,7 @@ class GraphRag:
 
         entity_rela_key = open(self.work_dir + "entity_relationship_key.jsonl", "a")
         for en in entities:
-            _ = entity_rela_key.write(json.dumps(en) + "\n")
+            _ = entity_rela_key.write(json.dumps(en, ensure_ascii=False) + "\n")
             save_to_dict_concat(self.entities_vk, en)
 
         entity_rela_key.close()
@@ -234,6 +234,6 @@ class GraphRag:
         self.on_wait_entities = []
         query_log_file.close()
         entities_vk_file = open(self.work_dir + "kv_entity_relationship.json", "w")
-        json.dump(self.entities_vk, entities_vk_file)
+        json.dump(self.entities_vk, entities_vk_file, ensure_ascii=False)
         entities_vk_file.close()
         return count

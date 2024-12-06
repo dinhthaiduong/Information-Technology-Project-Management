@@ -1,0 +1,1 @@
+{"cmd": "\ndata_entities = pl.read_parquet(\".embed/entities.quarquet\")\nprint(len(data_entities[0]['embed'][0]))\n", "cmd_opts": " --cell_id=Y3tpHThHY0 -s", "import_complete": 1, "terminal": "nvimterm"}
