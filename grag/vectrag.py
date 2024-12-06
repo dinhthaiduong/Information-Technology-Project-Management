@@ -70,7 +70,7 @@ class VectorRag:
                     return_dtype=pl.Float64,
                 ),
             }
-        ).top_k(5, by=pl.col("cosine"))
+        ).top_k(3, by=pl.col("cosine"))
 
         selected_text = self.vectors["text"].filter(
             self.vectors["index"].is_in(query_df["index"])

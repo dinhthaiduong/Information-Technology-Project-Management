@@ -189,9 +189,11 @@ class GraphRag:
         for entity in entities:
             hash_entity = hashing_entity(entity)
             if hash_entity in self.entities_vk:
-                self.on_wait_updating.append(entity)
                 if len(entity) > 4:
+                    entity.append("--update--")
+                    self.on_wait_updating.append(entity)
                     self.entities_vk[str(hash(entity[2] + entity[3]))] = entity
+
             else:
                 self.entities_vk[hash_entity] = entity
 
@@ -247,7 +249,8 @@ class GraphRag:
         ]
         remover_file.close()
 
-        self.on_wait_entities.extend(entities)
+        self.on_wait_entities.extend([entity for entity in entities if entity[-1] != "--update--"])
+        self.on_wait_updating.extend([entity for entity in entities if entity[-1] == "--update--"])
 
     def create_queries(self, entity: list[str]) -> list[str]:
         query = []
