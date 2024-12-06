@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import re
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Any
+from collections.abc import Iterable, Mapping
 from ollama import AsyncClient as Ollama, Message
 import asyncio
 from openai import AsyncClient as OpenAI
@@ -111,7 +112,7 @@ class GraphRag:
                 )
                 saved_entity_f.close()
 
-    async def chat_create_entities(self, text: str) -> str:
+    async def chat_create_entities_relationship(self, text: str) -> str:
         chat_res_content = await self.client.chat(
             [
                 {
@@ -124,6 +125,18 @@ class GraphRag:
         )
 
         return chat_res_content
+
+    async def chat_create_entity_type(self, question: str) -> str:
+        return await self.client.chat([
+            {
+                "role": "user",
+                "content": PROMPT["EXTRACT_ENTITY_CHAT"].format(
+                    question=question
+                )
+
+            }
+        ])
+
 
     def get_entites_from_chat_res(self, res: str) -> list[list[str]]:
         entities = regrex_input.findall(res)
@@ -198,7 +211,7 @@ class GraphRag:
                 self.entities_vk[hash_entity] = entity
 
     async def insert(self, input: str):
-        chat_res = await self.chat_create_entities(input)
+        chat_res = await self.chat_create_entities_relationship(input)
         entities = self.get_entites_from_chat_res(chat_res)
         entities_p = await self.entities_polling(entities, input)
 
@@ -213,7 +226,7 @@ class GraphRag:
             _ = await asyncio.gather(*[self.insert(input) for input in batch_inputs])
 
     async def chat(self, question: str) -> str:
-        entities = self.chat_create_entities(question)
+        entities = self.chat_create_entities_relationship(question)
         output = []
         for entity in entities:
             if not is_entity(entity):
@@ -249,8 +262,12 @@ class GraphRag:
         ]
         remover_file.close()
 
-        self.on_wait_entities.extend([entity for entity in entities if entity[-1] != "--update--"])
-        self.on_wait_updating.extend([entity for entity in entities if entity[-1] == "--update--"])
+        self.on_wait_entities.extend(
+            [entity for entity in entities if entity[-1] != "--update--"]
+        )
+        self.on_wait_updating.extend(
+            [entity for entity in entities if entity[-1] == "--update--"]
+        )
 
     def create_queries(self, entity: list[str]) -> list[str]:
         query = []
@@ -284,7 +301,7 @@ class GraphRag:
                 id=entity[2].capitalize(),
                 description=get_index_or(entity, 3, ""),
             )
-        relation = (extract_verbs(entity[3]),)
+        relation = extract_verbs(entity[3])
         return QUERY["update_edge"].format(
             e1=entity[1], e2=entity[2], relation=relation, description=entity[3]
         )

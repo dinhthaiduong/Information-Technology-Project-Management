@@ -1,1 +1,1 @@
-{"cmd": "\nvec_rag.query(\"end of life\")\n\n# vec_rag.\n# vec_rag.vectors\n# vec_rag.query(\"\")\n# gc\n# normalize_db_string(\"dsf\\\\sfff \"\"\")\n", "cmd_opts": " --cell_id=59DNQedlWD -s", "import_complete": 1, "terminal": "nvimterm"}
+{"cmd": "\nvec_rag.query(\"wild rice\")\n", "cmd_opts": " --cell_id=59DNQedlWD -s", "import_complete": 1, "terminal": "nvimterm"}

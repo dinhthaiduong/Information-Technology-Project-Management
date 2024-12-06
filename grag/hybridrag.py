@@ -21,28 +21,38 @@ class HybirdRag:
             self.vector_rag.from_a_graph_db(graph_rag.db)
 
     async def chat(self, question: str) -> tuple[str, list[str]]:
-        chat_res = await self.graph_rag.chat_create_entities(question)
+        chat_res = await self.graph_rag.chat_create_entities_relationship(question)
         entities = self.graph_rag.get_entites_from_chat_res(chat_res)
 
         output = []
         vector_entities: list[str] = []
+        queries = []
 
         for entity in entities:
-            if entity[0] != "entity":
-                continue
-            for en in self.vector_rag.query(entity[2]):
-                en_c = '"' + en + '"'
-                vector_entities.append(en_c)
+            if entity[0] == "entity":
+                for en in self.vector_rag.query(entity[2]):
+                    en_c = '"' + en + '"'
+                    vector_entities.append(en_c)
+            elif entity[0] == "type":
+                queries.append(
+                    QUERY["match_type"].format(
+                        type=entity[1].capitalize()
+                    )
+                )
 
-        query = QUERY["match_list"].format(ids=",".join(vector_entities))
-        records, _, _ = self.graph_rag.db.execute_query(query)
+        queries.append(
+            QUERY["match_list"].format(ids=",".join(vector_entities))
+        )
 
-        if len(records) > 0:
-            output.append(records[0]["e.description"])
+        for query in queries:
+            records, _, _ = self.graph_rag.db.execute_query(query)
 
-        for record in records:
-            output.append(record["r.description"])
-            output.append(record["e2.description"])
+            if len(records) > 0:
+                output.append(records[0]["e.description"])
+
+            for record in records:
+                output.append(record["r.description"])
+                output.append(record["e2.description"])
 
         prompt = PROMPT["CHAT"].format(question=question, received="\n".join(output))
 

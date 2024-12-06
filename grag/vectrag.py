@@ -48,8 +48,12 @@ class VectorRag:
         self.vectors = self.vectors.extend(
             pl.DataFrame(
                 {
-                    "index": pl.Series(range(rows_len, rows_len + len(text)), dtype=pl.UInt64),
+                    "index": pl.Series(
+                        range(rows_len, rows_len + len(text)), dtype=pl.UInt64
+                    ),
                     "text": text,
+                    # "embed": res.embeddings,
+                    # "embed": [np.array(embed) for embed in res.embeddings],
                     "embed": [
                         embed / np.linalg.norm(embed)
                         for embed in [np.array(embed) for embed in res.embeddings]
@@ -60,23 +64,24 @@ class VectorRag:
 
     def query(self, text: str) -> list[str]:
         embed = np.array(self.client.embed(self.model, text).embeddings)
+        embed = embed / np.linalg.norm(embed)
 
         vector = self.vectors["embed"]
         query_df = pl.DataFrame(
             {
                 "index": self.vectors["index"],
                 "cosine": vector.map_elements(
-                    lambda other: embed.dot(np.array(other)),  # cosine similality
+                    lambda other: np.dot(embed, np.array(other)),  # cosine similality
                     return_dtype=pl.Float64,
                 ),
             }
-        ).top_k(3, by=pl.col("cosine"))
+        ).top_k(10, by=pl.col("cosine"))
 
-        selected_text = self.vectors["text"].filter(
-            self.vectors["index"].is_in(query_df["index"])
+        selected_text = query_df.join(self.vectors, on="index").sort(
+            by="cosine", descending=True
         )
 
-        return selected_text.to_list()
+        return selected_text["text"].to_list()
 
     def save(self) -> None:
         self.vectors.write_parquet(self.save_file)

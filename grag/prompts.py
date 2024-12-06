@@ -146,11 +146,43 @@ This is the this of relationships
 
 """
 
+PROMPT["EXTRACT_ENTITY_CHAT"] = """
+Do the following:
+1. Get all the entities and find out it is a location, organization, person, geo or event, ....
+2. If can't find any entity search that if the question is about location, organization, person, geo or event, .... and return it in the output of ("type", ... , ... )
+
+Example 1:
+
+Question:
+
+Who is Alex?
+
+Output:
+[
+("entity", "person", "Alex"),
+]
+
+Example 2:
+
+Question:
+
+Tell me about any orginization in the document?
+
+Output:
+[
+("type", "orginization"),
+]
+
+This is the question:
+{question}
+"""
+
 QUERY: dict[str, str] = {}
 
 QUERY["entity"] = (
     'CREATE (c:`{type}` {{id: "{name}", description: "{description}" }}) RETURN c;\n'
 )
+
 
 QUERY["relationship"] = """
 MATCH (e1 {{id: \"{e1}\"}}), (e2 {{id: \"{e2}\"}})
@@ -182,3 +214,8 @@ MATCH (e)-[r]-(e2)
 WHERE e.id IN [{ids}]
 RETURN DISTINCT e.description, r.description, e2.description LIMIT 120;
 """
+
+QUERY["match_type"] = """
+MATCH (n: `{type}`) RETURN n.description;
+"""
+
