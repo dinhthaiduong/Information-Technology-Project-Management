@@ -4,6 +4,7 @@ from grag.rag import GraphRag
 from grag.vectrag import VectorRag
 import os
 
+
 @dataclass
 class HybirdRag:
     def __init__(
@@ -36,15 +37,9 @@ class HybirdRag:
                     vector_entities.append(en_c)
             elif entity[0] == "type":
                 print(entity)
-                queries.append(
-                    QUERY["match_type"].format(
-                        type=entity[1].capitalize()
-                    )
-                )
+                queries.append(QUERY["match_type"].format(type=entity[1].capitalize()))
 
-        queries.append(
-            QUERY["match_list"].format(ids=",".join(vector_entities))
-        )
+        queries.append(QUERY["match_list"].format(ids=",".join(vector_entities)))
 
         for query in queries:
             records, _, _ = self.graph_rag.db.execute_query(query)
@@ -58,8 +53,12 @@ class HybirdRag:
 
         prompt = PROMPT["CHAT"].format(question=question, received="\n".join(output))
 
-        print(prompt)
-        return await self.graph_rag.client.chat([{"role": "user", "content": prompt}]), vector_entities
+        a = (
+            await self.graph_rag.client.chat([{"role": "user", "content": prompt}]),
+            vector_entities,
+        )
+        print(a)
+        return a
 
     def reload_vector_store(self):
         self.vector_rag.from_a_graph_db(self.graph_rag.db)

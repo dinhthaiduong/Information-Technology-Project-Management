@@ -84,8 +84,8 @@ async def hybrid_rag():
                 else:
                     content = file.read().decode()
                     chunks = split_text_into_chunks(content)
-                    for idx, chunk in enumerate(tqdm(list(batchs(chunks, 10)))):
-                        _ = await graph_rag.insert_batch(chunk, 10)
+                    for idx, chunk in enumerate(tqdm(list(batchs(chunks, 1)))):
+                        _ = await graph_rag.insert_batch(chunk, 1)
 
                         if idx % 4 == 0:
                             inserted = graph_rag.write_to_db()
@@ -98,7 +98,6 @@ async def hybrid_rag():
 
     hybrid_rag = HybirdRag(graph_rag)
 
-    hybrid_rag.reload_vector_store()
     if uploaded:
         hybrid_rag.reload_vector_store()
 

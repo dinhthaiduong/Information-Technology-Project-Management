@@ -153,10 +153,11 @@ class GraphRag:
                 entites = re.findall(r"\((.*)\)", entity)
                 for entity in entites:
                     splited = re.findall(r'"([^"]*)"', entity)
-                    normarlized = [normalize_db_string(text) for text in splited]
-                    for entity in normarlized:
-                        entity[1] = entity[1].capitalize()
-                        entity[2] = entity[2].capitalize()
+                    normarlized = []
+                    for idx, text in enumerate(splited):
+                        if idx == 1 or idx == 2:
+                            normarlized.append(normalize_db_string(text).capitalize())
+                        normarlized.append(normalize_db_string(text))
 
                     output.append(normarlized)
 
