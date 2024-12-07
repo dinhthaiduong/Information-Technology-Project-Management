@@ -1,1 +1,1 @@
-{"cmd": "\nvec_rag.query(\"wild rice\")\n", "cmd_opts": " --cell_id=59DNQedlWD -s", "import_complete": 1, "terminal": "nvimterm"}
+{"cmd": "\nindexed = data_entities.select(\n    pl.int_range(pl.len(), dtype=pl.UInt64).alias(\"index\"),\n    \"text\", \"embed\"\n)\n\nindexed.write_parquet(\".embed/entities.parquet\")\n# print(indexed.write_parquet)\n", "cmd_opts": " --cell_id=N5kgQIPWpK -s", "import_complete": 1, "terminal": "nvimterm"}

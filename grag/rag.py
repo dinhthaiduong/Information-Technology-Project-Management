@@ -139,6 +139,11 @@ class GraphRag:
 
 
     def get_entites_from_chat_res(self, res: str) -> list[list[str]]:
+        output =  self.get_entities_from_chat_no_filter(res)
+
+        return list(filter(vaild_entity, output))
+    
+    def get_entities_from_chat_no_filter(self, res: str) -> list[list[str]]:
         entities = regrex_input.findall(res)
         output = []
 
@@ -149,9 +154,13 @@ class GraphRag:
                 for entity in entites:
                     splited = re.findall(r'"([^"]*)"', entity)
                     normarlized = [normalize_db_string(text) for text in splited]
+                    for entity in normarlized:
+                        entity[1] = entity[1].capitalize()
+                        entity[2] = entity[2].capitalize()
+
                     output.append(normarlized)
 
-        return list(filter(vaild_entity, output))
+        return output
 
     async def entities_polling(self, entities: list[list[str]], original_text: str):
         entitites_only = [entity for entity in entities if is_entity(entity)]
@@ -274,7 +283,7 @@ class GraphRag:
         if entity[0] == "entity":
             query.append(
                 QUERY["entity"].format(
-                    type=entity[1].capitalize(),
+                    type=entity[1],
                     name=entity[2],
                     description=get_index_or(entity, 3, ""),
                 )

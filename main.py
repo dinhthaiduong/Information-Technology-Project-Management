@@ -44,7 +44,7 @@ async def hybrid_rag():
     graph_rag = GraphRag(
         WORK_DIR,
         # "openai/gpt-4o-mini",
-        "ollama/llama3.2",
+        "ollama/llama3.1",
         os.getenv("BOLT_URI") or "bolt://localhost:7687",
         (os.getenv("NEO4J_USER") or "", os.getenv("NEO4J_PASSWORD") or ""),
         mode=RagMode.Create,
@@ -71,10 +71,7 @@ async def hybrid_rag():
                 file_extension = file.name.split(".")[-1]
                 if file_extension == "pdf":
                     file_pdf = PdfReader(file)
-                    total = float(len(file_pdf.pages)) / 10
-                    for idx, pages in enumerate(
-                        tqdm(batchs(file_pdf.pages, 10), total=total)
-                    ):
+                    for idx, pages in enumerate(tqdm(list(batchs(file_pdf.pages, 10)))):
                         chunks = split_text_into_chunks(
                             "\n".join([page.extract_text() for page in pages])
                         )
@@ -87,12 +84,7 @@ async def hybrid_rag():
                 else:
                     content = file.read().decode()
                     chunks = split_text_into_chunks(content)
-                    total = float(len(chunks)) / 10
-                    for idx, chunk in enumerate(tqdm(batchs(chunks, 10), total=total)):
-                        if count < 132:
-                            count += 1
-                            continue
-
+                    for idx, chunk in enumerate(tqdm(list(batchs(chunks, 10)))):
                         _ = await graph_rag.insert_batch(chunk, 10)
 
                         if idx % 4 == 0:

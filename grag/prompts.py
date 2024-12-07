@@ -148,8 +148,9 @@ This is the this of relationships
 
 PROMPT["EXTRACT_ENTITY_CHAT"] = """
 Do the following:
+0. Don't write any code.
 1. Get all the entities and find out it is a location, organization, person, geo or event, ....
-2. If can't find any entity search that if the question is about location, organization, person, geo or event, .... and return it in the output of ("type", ... , ... )
+2. If the quesiton is about location, organization, person, geo or event, .... and return it in the output of ("type", ... )
 
 Example 1:
 
