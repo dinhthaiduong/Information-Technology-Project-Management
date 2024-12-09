@@ -1,1 +1,1 @@
-{"cmd": "\nembeddings = model.encode(sentences)\nprint(embeddings)\n\n\n", "cmd_opts": " --cell_id=HqSFl4Fvrj -s", "import_complete": 1, "terminal": "nvimterm"}
+{"cmd": "\nvec_rag.query(\"tell me about christmas tree\")\n\n# vec_rag.query(\"People\")\n", "cmd_opts": " --cell_id=59DNQedlWD -s", "import_complete": 1, "terminal": "nvimterm"}

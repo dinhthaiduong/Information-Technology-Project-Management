@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from neo4j import Driver
 import polars as pl
 from ollama import Client
@@ -23,7 +24,7 @@ class VectorRag:
         self.work_dir: str = work_dir
         self.model: str = model
         self.client: Client = Client(host=host)
-        self.save_file: str = work_dir + "entities.parquet" 
+        self.save_file: str = work_dir + "entities.parquet"
         self.embed_len: int = embed_len
         self.vectors: pl.DataFrame = pl.DataFrame(
             {
@@ -62,6 +63,21 @@ class VectorRag:
                     ],
                 }
             )
+        )
+
+    def embed(self, text: Sequence[str]) -> Sequence[Sequence[float]]:
+        return self.client.embed(self.model, text).embeddings
+
+    def similality(
+        self, text: str, corpus: Sequence[str], top_k: int = 10
+    ) -> list[str]:
+        corpus_embed = [np.array(embed) for embed in self.embed(corpus)]
+        text_embed = np.array(self.embed([text])[0])
+
+        return (
+            pl.DataFrame({"text": corpus, "cosine": [np.dot(text_embed, embed) for embed in corpus_embed]})
+            .top_k(top_k, by="cosine")["text"]
+            .to_list()
         )
 
     def query(self, text: str) -> list[str]:

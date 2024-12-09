@@ -4,7 +4,6 @@ from grag.rag import GraphRag
 from grag.vectrag import VectorRag
 import os
 
-
 @dataclass
 class HybirdRag:
     def __init__(
@@ -27,6 +26,12 @@ class HybirdRag:
         queries = []
 
         print(entities, chat_res)
+
+        # for en in self.vector_rag.query(question):
+        #     en_c = '"' + en + '"'
+        #     vector_entities.append(en_c)
+
+        queries_type = []
         for entity in entities:
             if entity[0] == "entity":
                 for en in self.vector_rag.query(entity[2]):
@@ -34,7 +39,7 @@ class HybirdRag:
                     vector_entities.append(en_c)
             elif entity[0] == "type":
                 print(entity)
-                queries.append(QUERY["match_type"].format(type=entity[1].capitalize()))
+                queries_type.append(QUERY["match_type"].format(type=entity[1].capitalize()))
 
         queries.append(QUERY["match_list"].format(ids=",".join(vector_entities)))
 
@@ -48,11 +53,19 @@ class HybirdRag:
                 output.append(record["r.description"])
                 output.append(record["e2.description"])
 
-        prompt = PROMPT["CHAT"].format(question=question, received="\n".join(output))
+        for query in queries_type:
+            records, _, _ = self.graph_rag.db.execute_query(query)
 
+            for record in records:
+                output.append(record["e.description"])
+
+        output_nearest = self.vector_rag.similality(question, output, 50)
+        print("text recide docs len: ", len(output_nearest))
+
+        prompt = PROMPT["CHAT"].format(question=question, received="\n".join(output_nearest))
         return (
             await self.graph_rag.client.chat([{"role": "user", "content": prompt}]),
-            vector_entities,
+            output_nearest,
         )
 
     def reload_vector_store(self):
