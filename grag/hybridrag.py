@@ -25,12 +25,6 @@ class HybirdRag:
         vector_entities: list[str] = []
         queries = []
 
-        print(entities, chat_res)
-
-        # for en in self.vector_rag.query(question):
-        #     en_c = '"' + en + '"'
-        #     vector_entities.append(en_c)
-
         queries_type = []
         for entity in entities:
             if entity[0] == "entity":
@@ -38,7 +32,6 @@ class HybirdRag:
                     en_c = '"' + en + '"'
                     vector_entities.append(en_c)
             elif entity[0] == "type":
-                print(entity)
                 queries_type.append(QUERY["match_type"].format(type=entity[1].capitalize()))
 
         queries.append(QUERY["match_list"].format(ids=",".join(vector_entities)))
@@ -56,17 +49,21 @@ class HybirdRag:
         for query in queries_type:
             records, _, _ = self.graph_rag.db.execute_query(query)
 
+            if len(records) > 0:
+                output.append(records[0].get("e.description", ""))
+
             for record in records:
-                output.append(record["e.description"])
+                output.append(record["r.description"])
+                output.append(record["e2.description"])
 
         output_nearest = self.vector_rag.similality(question, output, 50)
         print("text recide docs len: ", len(output_nearest))
 
         prompt = PROMPT["CHAT"].format(question=question, received="\n".join(output_nearest))
-        return (
-            await self.graph_rag.client.chat([{"role": "user", "content": prompt}]),
-            output_nearest,
-        )
+
+        ans = await self.graph_rag.client.chat([{"role": "user", "content": prompt}])
+        print(chat_res, entities)
+        return (ans, output_nearest)
 
     def reload_vector_store(self):
         self.vector_rag.from_a_graph_db(self.graph_rag.db)

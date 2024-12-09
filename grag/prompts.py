@@ -217,6 +217,6 @@ RETURN DISTINCT e.description, r.description, e2.description LIMIT 120;
 """
 
 QUERY["match_type"] = """
-MATCH (n: `{type}`) RETURN DISTINCT n.description;
+MATCH (n: `{type}`)-[r]-(e2) RETURN n.description, r.description, e2.description LIMIT 120;
 """
 

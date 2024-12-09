@@ -44,8 +44,9 @@ async def main():
 async def hybrid_rag():
     graph_rag = GraphRag(
         WORK_DIR,
+        "ollama/qwen2",
         # "openai/gpt-4o-mini",
-        "ollama/llama3.1",
+        # "ollama/llama3.2",
         os.getenv("BOLT_URI") or "bolt://localhost:7687",
         (os.getenv("NEO4J_USER") or "", os.getenv("NEO4J_PASSWORD") or ""),
         mode=RagMode.Create,
