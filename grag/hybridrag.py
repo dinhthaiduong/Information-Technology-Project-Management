@@ -12,13 +12,10 @@ class HybirdRag:
         graph_rag: GraphRag,
         *,
         vector_model: str = "all-minilm:l6-v2",
-        vector_save_file: str = "entities.parquet",
     ) -> None:
         self.graph_rag: GraphRag = graph_rag
-        self.vector_rag: VectorRag = VectorRag(
-            graph_rag.work_dir, save_file=vector_save_file, model=vector_model
-        )
-        if not os.path.exists(graph_rag.work_dir + vector_save_file):
+        self.vector_rag: VectorRag = VectorRag(graph_rag.work_dir, model=vector_model)
+        if not os.path.exists(graph_rag.work_dir + "entities.parquet"):
             self.vector_rag.from_a_graph_db(graph_rag.db)
 
     async def chat(self, question: str) -> tuple[str, list[str]]:
@@ -53,12 +50,10 @@ class HybirdRag:
 
         prompt = PROMPT["CHAT"].format(question=question, received="\n".join(output))
 
-        a = (
+        return (
             await self.graph_rag.client.chat([{"role": "user", "content": prompt}]),
             vector_entities,
         )
-        print(a)
-        return a
 
     def reload_vector_store(self):
         self.vector_rag.from_a_graph_db(self.graph_rag.db)

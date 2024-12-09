@@ -5,6 +5,9 @@ import os
 import numpy as np
 from dataclasses import dataclass
 from grag.prompts import QUERY
+# from sentence_transformers import SentenceTransformer
+# sentences = ["This is an example sentence", "Each sentence is converted"]
+# model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
 
 
 @dataclass
@@ -16,12 +19,11 @@ class VectorRag:
         host: str = "http://localhost:11434",
         model: str = "all-minilm:l6-v2",
         embed_len: int = 384,
-        save_file: str = "vector_store.parquet",
     ) -> None:
         self.work_dir: str = work_dir
         self.model: str = model
         self.client: Client = Client(host=host)
-        self.save_file: str = work_dir + save_file
+        self.save_file: str = work_dir + "entities.parquet" 
         self.embed_len: int = embed_len
         self.vectors: pl.DataFrame = pl.DataFrame(
             {
