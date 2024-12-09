@@ -3,6 +3,7 @@ from typing import Any, TypeVar
 from nltk import sent_tokenize, word_tokenize, pos_tag
 from nltk.stem import WordNetLemmatizer
 import numpy as np
+import os
 import re
 
 from grag.prompts import PROMPT
@@ -12,6 +13,15 @@ class RagMode(Enum):
     Create = "create"
     QUERY = "query"
 
+
+def create_work_dir(path: str) -> None:
+    if os.path.exists(path):
+        return
+
+    os.mkdir(path)
+    git_ignore_file = open(path + ".gitignore", 'w')
+    _ = git_ignore_file.write("*") 
+    git_ignore_file.close()
 
 T = TypeVar('T')
 def batchs(lst: list[T], n: int):
@@ -34,7 +44,6 @@ def split_text_into_chunks(text: str, max_length: int = 4000) -> list[str]:
         chunks.append(current_chunk.strip())
 
     return chunks
-
 
 normalize_db_string_pattern = re.compile('[' + re.escape(''.join(PROMPT["SPECIAL_CHARS"])) + ']')
 def normalize_db_string(text: str):

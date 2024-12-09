@@ -9,7 +9,7 @@ from .prompts import PROMPT, QUERY
 import os
 import json
 from neo4j import Driver, GraphDatabase
-from .utils import RagMode, extract_verbs, get_index_or, normalize_db_string, batchs
+from .utils import RagMode, create_work_dir, extract_verbs, get_index_or, normalize_db_string, batchs
 
 
 regrex_input = re.compile(r"\[(.*)\]", re.DOTALL)
@@ -98,6 +98,8 @@ class GraphRag:
         if self.mode == RagMode.QUERY:
             return
 
+        create_work_dir(work_dir)
+
         if os.path.exists(work_dir + "kv_entity_relationship.json"):
             with open(
                 work_dir + "kv_entity_relationship.json", "r", encoding="utf-8"
@@ -157,6 +159,8 @@ class GraphRag:
                     for idx, text in enumerate(splited):
                         if idx == 1 or idx == 2:
                             normarlized.append(normalize_db_string(text).capitalize())
+                            continue
+
                         normarlized.append(normalize_db_string(text))
 
                     output.append(normarlized)

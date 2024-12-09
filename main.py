@@ -98,6 +98,7 @@ async def hybrid_rag():
     else:
         show_graph()
 
+    # hybrid_rag = HybirdRag(graph_rag)
     hybrid_rag = HybirdRag(graph_rag)
 
     if uploaded:

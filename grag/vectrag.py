@@ -6,6 +6,7 @@ import os
 import numpy as np
 from dataclasses import dataclass
 from grag.prompts import QUERY
+from grag.utils import create_work_dir
 # from sentence_transformers import SentenceTransformer
 # sentences = ["This is an example sentence", "Each sentence is converted"]
 # model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
@@ -39,8 +40,7 @@ class VectorRag:
             },
             # schema={"text": pl.String, "embed": pl.List(pl.Float64)},
         )
-        if not os.path.exists(work_dir):
-            os.mkdir(work_dir)
+        create_work_dir(work_dir)
 
         if os.path.exists(self.save_file):
             self.vectors = pl.read_parquet(self.save_file)
@@ -75,7 +75,12 @@ class VectorRag:
         text_embed = np.array(self.embed([text])[0])
 
         return (
-            pl.DataFrame({"text": corpus, "cosine": [np.dot(text_embed, embed) for embed in corpus_embed]})
+            pl.DataFrame(
+                {
+                    "text": corpus,
+                    "cosine": [np.dot(text_embed, embed) for embed in corpus_embed],
+                }
+            )
             .top_k(top_k, by="cosine")["text"]
             .to_list()
         )
@@ -112,5 +117,19 @@ class VectorRag:
             ids_series.is_in(self.vectors["text"]).not_()
         ).to_list()
 
-        self.insert(ids_unique)
+        res = self.client.embed(self.model, ids_unique)
+
+        rows_len = self.vectors.shape[0]
+        self.vectors = pl.DataFrame(
+            {
+                "index": pl.Series(
+                    range(rows_len, rows_len + len(ids_unique)), dtype=pl.UInt64
+                ),
+                "text": ids_unique,
+                "embed": [
+                    embed / np.linalg.norm(embed)
+                    for embed in [np.array(embed) for embed in res.embeddings]
+                ],
+            }
+        )
         self.save()

@@ -1,8 +1,10 @@
 from dataclasses import dataclass
 from grag.prompts import PROMPT, QUERY
 from grag.rag import GraphRag
+from grag.utils import create_work_dir
 from grag.vectrag import VectorRag
 import os
+
 
 @dataclass
 class HybirdRag:
@@ -11,9 +13,14 @@ class HybirdRag:
         graph_rag: GraphRag,
         *,
         vector_model: str = "all-minilm:l6-v2",
+        embed_len: int = 384,
     ) -> None:
         self.graph_rag: GraphRag = graph_rag
-        self.vector_rag: VectorRag = VectorRag(graph_rag.work_dir, model=vector_model)
+        self.vector_rag: VectorRag = VectorRag(
+            graph_rag.work_dir, model=vector_model, embed_len=embed_len
+        )
+
+        create_work_dir(self.graph_rag.work_dir)
         if not os.path.exists(graph_rag.work_dir + "entities.parquet"):
             self.vector_rag.from_a_graph_db(graph_rag.db)
 
@@ -32,7 +39,9 @@ class HybirdRag:
                     en_c = '"' + en + '"'
                     vector_entities.append(en_c)
             elif entity[0] == "type":
-                queries_type.append(QUERY["match_type"].format(type=entity[1].capitalize()))
+                queries_type.append(
+                    QUERY["match_type"].format(type=entity[1].capitalize())
+                )
 
         queries.append(QUERY["match_list"].format(ids=",".join(vector_entities)))
 
@@ -59,7 +68,9 @@ class HybirdRag:
         output_nearest = self.vector_rag.similality(question, output, 50)
         print("text recide docs len: ", len(output_nearest))
 
-        prompt = PROMPT["CHAT"].format(question=question, received="\n".join(output_nearest))
+        prompt = PROMPT["CHAT"].format(
+            question=question, received="\n".join(output_nearest)
+        )
 
         ans = await self.graph_rag.client.chat([{"role": "user", "content": prompt}])
         print(chat_res, entities)
