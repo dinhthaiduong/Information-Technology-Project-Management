@@ -18,8 +18,8 @@ header = st.container()
 
 _ = load_dotenv()
 
-WORK_DIR = ".uet_2/"
-NEO4J_AUTH = os.getenv("NEO4J_AUTH") or "neo4j/password"
+WORK_DIR = ".uet_gpt/"
+NEO4J_AUTH = os.getenv("NEO4J_AUTH") or "neo4j/httt@2022"
 os.environ["NEO4J_USER"], os.environ["NEO4J_PASSWORD"] = NEO4J_AUTH.split("/")
 
 TMP_DIR = Path(__file__).resolve().parent.parent.joinpath("data", "tmp")
@@ -41,8 +41,8 @@ async def main():
 async def hybrid_rag():
     graph_rag = GraphRag(
         WORK_DIR,
-        "ollama/qwen2",
-        # "openai/gpt-4o-mini",
+        # "ollama/qwen2",
+        "openai/gpt-4o-mini",
         # "ollama/llama3.2",
         os.getenv("BOLT_URI") or "bolt://localhost:7687",
         (os.getenv("NEO4J_USER") or "", os.getenv("NEO4J_PASSWORD") or ""),
@@ -70,35 +70,34 @@ async def hybrid_rag():
                 if file_extension == "pdf":
                     file_pdf = PdfReader(file)
                     page_batchs = list(batchs(file_pdf.pages, 10))
+                    bar_progress = st.progress(0)
                     for idx, pages in enumerate(tqdm(page_batchs)):
-                        _ = st.progress(idx / len(page_batchs))
+                        _ = bar_progress.progress(idx / len(page_batchs))
                         chunks = split_text_into_chunks(
                             "\n".join([page.extract_text() for page in pages])
                         )
                         _ = await graph_rag.insert_batch(chunks, 100)
 
-                        if idx % 1 == 0:
-                            inserted = graph_rag.write_to_db()
-                            print("Insert ", str(inserted), " value")
+                        inserted = graph_rag.write_to_db()
+                        print("Insert ", str(inserted), " value")
 
                 else:
                     content = file.read().decode()
                     chunks = split_text_into_chunks(content)
-                    total_batchs = list(batchs(chunks, 1))
+                    total_batchs = list(batchs(chunks, 100))
+                    bar_progress = st.progress(0)
                     for idx, chunk in enumerate(tqdm(total_batchs)):
-                        # _ = st.progress(idx / len(total_batchs))
-                        _ = await graph_rag.insert_batch(chunk, 1)
+                        _ = bar_progress.progress(idx / len(total_batchs))
+                        _ = await graph_rag.insert_batch(chunk, 100)
 
-                        if idx % 4 == 0:
-                            inserted = graph_rag.write_to_db()
-                            print("Insert ", str(inserted), " value")
+                        inserted = graph_rag.write_to_db()
+                        print("Insert ", str(inserted), " value")
 
                 inserted = graph_rag.write_to_db()
                 print("Insert ", str(inserted), " value")
     else:
         show_graph()
 
-    # hybrid_rag = HybirdRag(graph_rag)
     hybrid_rag = HybirdRag(graph_rag)
 
     if uploaded:
@@ -135,9 +134,10 @@ async def hybrid_rag():
 def show_graph():
     _ = st.title("Neo4j Graph Visualization")
 
+    # user input for Neo4J credential
     uri = os.getenv("BOLT_URI") or "bolt://localhost:7687"
-    user = os.getenv("NEO4J_USER") or "neo4j"
-    password = os.getenv("NEO4J_PASSWORD") or "password"
+    user = os.getenv("NEO4J_USER") or ""
+    password = os.getenv("NEO4J_PASSWORD") or ""
 
     # Create a load graph button
     if st.button("Load Graph"):

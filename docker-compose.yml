@@ -1,7 +1,7 @@
 version: '3.0'
 
 volumes:
-  uet-neo4j:
+  uet2-neo4j:
 
 services:
   neo4j:
@@ -15,6 +15,6 @@ services:
         required: true
 
     volumes:
-      - uet-neo4j:/data
+      - uet2-neo4j:/data
 
 
