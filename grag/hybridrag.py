@@ -26,7 +26,7 @@ class HybirdRag:
 
     async def chat(self, question: str) -> tuple[str, list[str]]:
         chat_res = await self.graph_rag.chat_create_entity_type(question)
-        entities = self.graph_rag.get_entites_from_chat_res(chat_res)
+        entities = self.graph_rag.get_entities_from_chat_no_filter(chat_res)
 
         output = []
         vector_entities: list[str] = []
@@ -36,9 +36,9 @@ class HybirdRag:
         for entity in entities:
             if entity[0] == "entity":
                 for en in self.vector_rag.query(entity[2]):
-                    en_c = '"' + en + '"'
+                    en_c = '"' + en.capitalize() + '"'
                     vector_entities.append(en_c)
-            elif entity[0] == "type":
+            else:
                 queries_type.append(
                     QUERY["match_type"].format(type=entity[1].capitalize())
                 )
@@ -66,14 +66,16 @@ class HybirdRag:
                 output.append(record["e2.description"])
 
         output_nearest = self.vector_rag.similality(question, output, 50)
-        print("text recide docs len: ", len(output_nearest))
+        # print(output)
+        # print(queries, queries_type)
+        print("text recive docs len: ", len(output_nearest))
+        print(chat_res, entities)
 
         prompt = PROMPT["CHAT"].format(
             question=question, received="\n".join(output_nearest)
         )
 
         ans = await self.graph_rag.client.chat([{"role": "user", "content": prompt}])
-        print(chat_res, entities)
         return (ans, output_nearest)
 
     def reload_vector_store(self):

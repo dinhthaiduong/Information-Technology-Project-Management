@@ -149,8 +149,9 @@ This is the this of relationships
 PROMPT["EXTRACT_ENTITY_CHAT"] = """
 Do the following:
 0. Don't write any code.
-1. Get all the entities and find out it is a location, organization, person, geo or event, ....
-2. If the quesiton is about location, organization, person, geo or event, .... and return it in the output of ("type", ... )
+1. An entity is an noun which represent a location, organization, person, geo or event, .... Find all entities, that have that propertity.
+2. If the quesiton is about location, organization, person, geo or event, .... 
+3. Return the output of is either  ("entity", ...) or ("type", ... )
 
 Example 1:
 
@@ -171,7 +172,7 @@ Tell me about any orginization in the document?
 
 Output:
 [
-("type", "orginization"),
+("type", "Orginization"),
 ]
 
 This is the question:

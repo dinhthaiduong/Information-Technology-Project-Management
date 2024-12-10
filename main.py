@@ -68,12 +68,13 @@ async def hybrid_rag():
             _ = st.warning("Please upload a document")
         else:
             uploaded = True
-            count = 0
             for file in files:
                 file_extension = file.name.split(".")[-1]
                 if file_extension == "pdf":
                     file_pdf = PdfReader(file)
-                    for idx, pages in enumerate(tqdm(list(batchs(file_pdf.pages, 10)))):
+                    page_batchs = list(batchs(file_pdf.pages, 10))
+                    for idx, pages in enumerate(tqdm(page_batchs)):
+                        _ = st.progress(idx / len(page_batchs))
                         chunks = split_text_into_chunks(
                             "\n".join([page.extract_text() for page in pages])
                         )
@@ -86,7 +87,9 @@ async def hybrid_rag():
                 else:
                     content = file.read().decode()
                     chunks = split_text_into_chunks(content)
-                    for idx, chunk in enumerate(tqdm(list(batchs(chunks, 1)))):
+                    total_batchs = list(batchs(chunks, 1))
+                    for idx, chunk in enumerate(tqdm(total_batchs)):
+                        _ = st.progress(idx / len(total_batchs))
                         _ = await graph_rag.insert_batch(chunk, 1)
 
                         if idx % 4 == 0:
