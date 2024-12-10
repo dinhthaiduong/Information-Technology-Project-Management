@@ -28,6 +28,11 @@ def batchs(lst: list[T], n: int):
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
 
+def is_or_default(value: T, check: T, default: T) -> T:
+    if value != check:
+        return value
+    return default
+
 def split_text_into_chunks(text: str, max_length: int = 4000) -> list[str]:
     sentences = sent_tokenize(text)
     chunks = []

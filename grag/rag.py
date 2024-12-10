@@ -9,7 +9,7 @@ from .prompts import PROMPT, QUERY
 import os
 import json
 from neo4j import Driver, GraphDatabase
-from .utils import RagMode, create_work_dir, extract_verbs, get_index_or, normalize_db_string, batchs
+from .utils import RagMode, create_work_dir, extract_verbs, get_index_or, is_or_default, normalize_db_string, batchs
 
 
 regrex_input = re.compile(r"\[(.*)\]", re.DOTALL)
@@ -288,7 +288,7 @@ class GraphRag:
         if entity[0] == "entity":
             query.append(
                 QUERY["entity"].format(
-                    type=entity[1],
+                    type=is_or_default(entity[1], "", "Entity"),
                     name=entity[2],
                     description=get_index_or(entity, 3, ""),
                 )
