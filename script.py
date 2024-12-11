@@ -17,7 +17,7 @@ async def main():
     graph_rag = GraphRag(
         WORK_DIR,
         # "ollama/qwen2",
-        "openai/gpt4-o1-mini",
+        "openai/gpt-4o-mini",
         os.getenv("BOLT_URI") or "bolt://localhost:7688",
         (NEO4J_USER, NEO4J_PASSWORD),
         mode=RagMode.Create,
