@@ -10,3 +10,5 @@ lib
 graph.html
 read-data.py
 examples/checking_inputs.json
+result*
+data/

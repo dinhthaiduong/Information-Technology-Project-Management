@@ -1,20 +1,21 @@
 version: '3.0'
 
 volumes:
-  uet2-neo4j:
+  script-neo4j:
 
 services:
   neo4j:
     image: neo4j:latest
+    container_name: script-neo4j
     ports:
-      - '7474:7474'
-      - '7687:7687'
+      - '7474:7475'
+      - '7687:7688'
 
     env_file:
       - path: .env
         required: true
 
     volumes:
-      - uet2-neo4j:/data
+      - script-neo4j:/data
 
 
