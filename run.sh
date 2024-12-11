@@ -12,6 +12,7 @@ source .venv/bin/activate
 $docker compose up -d
 
 python script.py data/all_context2.json
+# python script.py data/book.txt
 
 mkdir -p result
 docker_volume_saved=$($docker volume list | grep script-neo4j | cut -f8 -d' ')
