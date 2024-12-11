@@ -131,7 +131,6 @@ async def hybrid_rag():
                 {"role": "assistant", "content": response1}
             )
 
-
 def show_graph():
     _ = st.title("Neo4j Graph Visualization")
 
