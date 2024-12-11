@@ -1,6 +1,6 @@
 #!/bin/sh
 
-docker=podman
+docker=docker
 UV_LINK_MODE=symlink
 pip install uv
 uv sync
@@ -11,7 +11,7 @@ source .venv/bin/activate
 
 $docker compose up -d
 
-python script.py data/book.txt
+python script.py data/all_context2.json
 
 mkdir -p result
 docker_volume_saved=$($docker volume list | grep script-neo4j | cut -f8 -d' ')
