@@ -1,5 +1,4 @@
 import asyncio
-from pathlib import Path
 from streamlit_option_menu import option_menu
 import streamlit as st
 from neo4j import GraphDatabase, Record
@@ -18,11 +17,11 @@ header = st.container()
 
 _ = load_dotenv()
 
-WORK_DIR = ".uet_2/"
+WORK_DIR = ".test_gemini/"
 NEO4J_AUTH = os.getenv("NEO4J_AUTH") or "neo4j/password"
-os.environ["NEO4J_USER"], os.environ["NEO4J_PASSWORD"] = NEO4J_AUTH.split("/")
+NEO4J_USER, NEO4J_PASSWORD = NEO4J_AUTH.split("/")
 
-TMP_DIR = Path(__file__).resolve().parent.parent.joinpath("data", "tmp")
+# TMP_DIR = Path(__file__).resolve().parent.parent.joinpath("data", "tmp")
 
 
 async def main():
@@ -41,11 +40,12 @@ async def main():
 async def hybrid_rag():
     graph_rag = GraphRag(
         WORK_DIR,
-        "ollama/qwen2",
+        "google/gemini-1.5-flash-8b",
+        # "ollama/qwen2",
         # "openai/gpt-4o-mini",
         # "ollama/llama3.2",
         os.getenv("BOLT_URI") or "bolt://localhost:7687",
-        (os.getenv("NEO4J_USER") or "", os.getenv("NEO4J_PASSWORD") or ""),
+        (NEO4J_USER, NEO4J_PASSWORD),
         mode=RagMode.Create,
     )
 

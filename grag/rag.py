@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import re
 from typing import Any
-from collections.abc import Iterable, Mapping
+from collections.abc import  Mapping, Sequence
 from ollama import AsyncClient as Ollama, Message
 import asyncio
 from openai import AsyncClient as OpenAI
@@ -9,7 +9,16 @@ from .prompts import PROMPT, QUERY
 import os
 import json
 from neo4j import Driver, GraphDatabase
-from .utils import RagMode, create_work_dir, extract_verbs, get_index_or, is_or_default, normalize_db_string, batchs
+from .utils import (
+    RagMode,
+    create_work_dir,
+    extract_verbs,
+    get_index_or,
+    is_or_default,
+    normalize_db_string,
+    batchs,
+)
+import google.generativeai as genai
 
 
 regrex_input = re.compile(r"\[(.*)\]", re.DOTALL)
@@ -31,30 +40,35 @@ class ModelAddapter:
         self.provider: str = provider
         self.model: str = model
         if provider == "ollama":
-            self.client: Ollama = Ollama(host)
+            self.client_ollama: Ollama = Ollama(host)
         elif provider == "openai":
-            self.client: OpenAI = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+            self.client_openai: OpenAI = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        elif provider == "google":
+            genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+            self.client_google: genai.GenerativeModel = genai.GenerativeModel(model)
         else:
             raise ValueError("invaid provider")
 
     async def chat(
-        self, messages: Iterable[Mapping[str, Any] | Message], *, stream: bool = False
+        self,
+        messages: Sequence[Mapping[str, Any] | Message],
     ) -> str:
         if self.provider == "ollama":
-            chat_res = await self.client.chat(
+            chat_res = await self.client_ollama.chat(
                 model=self.model,
                 messages=messages,
-                stream=stream,
             )
             return chat_res.message.content or ""
         elif self.provider == "openai":
-            chat_res = await self.client.chat.completions.create(
+            chat_res = await self.client_openai.chat.completions.create(
                 model=self.model,
                 messages=messages,
-                stream=stream,
             )
 
             return chat_res.choices[0].message.content or ""
+        elif self.provider == "google":
+            response = self.client_google.generate_content(messages[0]["content"])
+            return response.text
 
         return ""
 
@@ -129,22 +143,20 @@ class GraphRag:
         return chat_res_content
 
     async def chat_create_entity_type(self, question: str) -> str:
-        return await self.client.chat([
-            {
-                "role": "user",
-                "content": PROMPT["EXTRACT_ENTITY_CHAT"].format(
-                    question=question
-                )
-
-            }
-        ])
-
+        return await self.client.chat(
+            [
+                {
+                    "role": "user",
+                    "content": PROMPT["EXTRACT_ENTITY_CHAT"].format(question=question),
+                }
+            ]
+        )
 
     def get_entites_from_chat_res(self, res: str) -> list[list[str]]:
-        output =  self.get_entities_from_chat_no_filter(res)
+        output = self.get_entities_from_chat_no_filter(res)
 
         return list(filter(vaild_entity, output))
-    
+
     def get_entities_from_chat_no_filter(self, res: str) -> list[list[str]]:
         entities = regrex_input.findall(res)
         output = []

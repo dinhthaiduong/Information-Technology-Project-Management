@@ -1,11 +1,13 @@
 version: '3.0'
 
 volumes:
+  gg-neo4j:
   uet2-neo4j:
 
 services:
   neo4j:
     image: neo4j:latest
+    container_name: gg-neo4j
     ports:
       - '7474:7474'
       - '7687:7687'
@@ -15,6 +17,6 @@ services:
         required: true
 
     volumes:
-      - uet2-neo4j:/data
+      - gg-neo4j:/data
 
 
