@@ -66,12 +66,12 @@ async def hybrid_rag():
                     for idx, pages in enumerate(tqdm(page_batchs)):
                         _ = st.progress(idx / len(page_batchs))
                         chunks = split_text_into_chunks(
-                            "\n".join([page.extract_text() for page in pages])
+                            "\n".join([page.extract_text() for page in pages]), 3500
                         )
                         _ = await graph_rag.insert_batch(chunks, 100)
                 else:
                     content = file.read().decode()
-                    chunks = split_text_into_chunks(content)
+                    chunks = split_text_into_chunks(content, 3500)
                     total_batchs = list(batchs(chunks, 1))
                     for idx, chunk in enumerate(tqdm(total_batchs)):
                         # _ = st.progress(idx / len(total_batchs))

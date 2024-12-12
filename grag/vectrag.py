@@ -20,12 +20,13 @@ class VectorRag:
         *,
         host: str = "http://localhost:11434",
         model: str = "all-minilm:l6-v2",
+        save_file: str = "entities.parquet",
         embed_len: int = 384,
     ) -> None:
         self.work_dir: str = work_dir
         self.model: str = model
         self.client: Client = Client(host=host)
-        self.save_file: str = work_dir + "entities.parquet"
+        self.save_file: str = work_dir + save_file
         self.embed_len: int = embed_len
         self.vectors: pl.DataFrame = pl.DataFrame(
             {
@@ -85,7 +86,7 @@ class VectorRag:
             .to_list()
         )
 
-    def query(self, text: str) -> list[str]:
+    def query(self, text: str, *,top_k: int=10) -> list[str]:
         embed = np.array(self.client.embed(self.model, text).embeddings)
         embed = embed / np.linalg.norm(embed)
 
@@ -98,7 +99,7 @@ class VectorRag:
                     return_dtype=pl.Float64,
                 ),
             }
-        ).top_k(10, by=pl.col("cosine"))
+        ).top_k(top_k, by=pl.col("cosine"))
 
         selected_text = query_df.join(self.vectors, on="index").sort(
             by="cosine", descending=True

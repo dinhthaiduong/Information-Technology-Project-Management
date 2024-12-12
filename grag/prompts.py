@@ -74,25 +74,6 @@ This in the input text: {input_text}
 PROMPT["CHAT"] = """
 You will be provided with a list of information. Your task is to accurately answer a question based solely on the information given.
 
-Example:
-
-Information:
-
-The quick brown fox jumps over the lazy dog.
-A dog is a domesticated animal.
-Question:
-
-What is a dog?
-Your Response:
-
-A dog is a domesticated animal.
-
-Remember to:
-
-Be specific: Clearly outline the task and any specific guidelines.
-Provide context: If necessary, provide additional context or background information.
-Set expectations: Clarify the desired format and level of detail in the response. Answer be the language in the question
-
 Answer this question:
 {question}
 

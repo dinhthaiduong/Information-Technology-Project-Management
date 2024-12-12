@@ -13,6 +13,8 @@ import streamlit.components.v1 as components
 from pypdf import PdfReader
 from tqdm import tqdm
 
+from grag.vectrag import VectorRag
+
 header = st.container()
 
 _ = load_dotenv()
@@ -41,13 +43,17 @@ async def hybrid_rag():
     graph_rag = GraphRag(
         WORK_DIR,
         # "google/gemini-1.5-flash-8b",
-        "ollama/qwen2",
+        # "ollama/qwen2",
+        "groq/llama3-70b-8192",
         # "openai/gpt-4o-mini",
         # "ollama/llama3.2",
         db_uri=os.getenv("BOLT_URI") or "bolt://localhost:7687",
         db_auth=(NEO4J_USER, NEO4J_PASSWORD),
         mode=RagMode.Create,
     )
+
+    vector_rag = VectorRag(WORK_DIR, save_file="docrag.parquet")
+    hybrid_rag = HybirdRag(graph_rag, vector_rag)
 
     choice = option_menu("Options", ["Upload document", "Chat"])
     flag = 0
@@ -69,16 +75,17 @@ async def hybrid_rag():
                 file_extension = file.name.split(".")[-1]
                 if file_extension == "pdf":
                     file_pdf = PdfReader(file)
-                    page_batchs = list(batchs(file_pdf.pages, 10))
+                    pages_text = [page.extract_text() for page in file_pdf.pages]
+                    page_batchs = list(batchs(pages_text, 1))
                     for idx, pages in enumerate(tqdm(page_batchs)):
                         _ = st.progress(idx / len(page_batchs))
                         chunks = split_text_into_chunks(
-                            "\n".join([page.extract_text() for page in pages])
+                            "\n".join([page for page in pages])
                         )
-                        _ = await graph_rag.insert_batch(chunks, 100)
+                        _ = await hybrid_rag.insert(chunks, batch=1)
 
-                        if idx % 1 == 0:
-                            inserted = graph_rag.write_to_db()
+                        if idx % 4 == 0:
+                            inserted = hybrid_rag.graph_rag.write_to_db()
                             print("Insert ", str(inserted), " value")
 
                 else:
@@ -87,19 +94,16 @@ async def hybrid_rag():
                     total_batchs = list(batchs(chunks, 1))
                     for idx, chunk in enumerate(tqdm(total_batchs)):
                         # _ = st.progress(idx / len(total_batchs))
-                        _ = await graph_rag.insert_batch(chunk, 1)
+                        _ = await hybrid_rag.insert(chunk, batch=1)
 
                         if idx % 4 == 0:
-                            inserted = graph_rag.write_to_db()
+                            inserted = hybrid_rag.graph_rag.write_to_db()
                             print("Insert ", str(inserted), " value")
 
-                inserted = graph_rag.write_to_db()
+                inserted = hybrid_rag.graph_rag.write_to_db()
                 print("Insert ", str(inserted), " value")
     else:
         show_graph()
-
-    # hybrid_rag = HybirdRag(graph_rag)
-    hybrid_rag = HybirdRag(graph_rag)
 
     if uploaded:
         hybrid_rag.reload_vector_store()
@@ -130,6 +134,7 @@ async def hybrid_rag():
             st.session_state.messages1.append(
                 {"role": "assistant", "content": response1}
             )
+
 
 def show_graph():
     _ = st.title("Neo4j Graph Visualization")

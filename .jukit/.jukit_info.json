@@ -1,1 +1,1 @@
-{"cmd": "\n# vec_rag.query(\"thợ nuôi ong\")\nvec_rag.query(\"bee\")\n\n# vec_rag.query(\"People\")\n", "cmd_opts": " --cell_id=59DNQedlWD -s", "import_complete": 1, "terminal": "nvimterm"}
+{"cmd": "\nfrom pypdf import PdfReader\n\n\nfile_pdf = PdfReader(\"/home/khuong/Downloads/Trường Đại học Công nghệ, Đại học Quốc gia Hà Nội – Wikipedia tiếng Việt.pdf\")\n\n# for page in file_pdf.pages:\n#     print(page.extract_text())\n\n\n", "cmd_opts": " --cell_id=keKVDRleXS -s", "import_complete": 1, "terminal": "nvimterm"}

@@ -949,6 +949,23 @@ wheels = [
 ]
 
 [[package]]
+name = "groq"
+version = "0.13.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "anyio" },
+    { name = "distro" },
+    { name = "httpx" },
+    { name = "pydantic" },
+    { name = "sniffio" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/27/55/31d57ca9fc0c8dd29eed0f2f30112f7477d3b68e9a826a22f7edb5bc5c36/groq-0.13.0.tar.gz", hash = "sha256:aaa213821c94d8974e57bab5fe59cb45c8871875d0cd53ec179afed928bad18e", size = 108654 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/fb/d2/2ee77e5c12b39d45df6e053cabcfec62b367e92bc613a9e29d66e74997a9/groq-0.13.0-py3-none-any.whl", hash = "sha256:1c2b16fd1c4665c2d09509ee42ead9cc7d32534b37b2051fee0ea8b6216b899d", size = 108777 },
+]
+
+[[package]]
 name = "grpcio"
 version = "1.68.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1110,6 +1127,7 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "google-generativeai" },
+    { name = "groq" },
     { name = "langchain-openai" },
     { name = "matplotlib" },
     { name = "neo4j" },
@@ -1135,6 +1153,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "google-generativeai", specifier = ">=0.8.3" },
+    { name = "groq", specifier = ">=0.13.0" },
     { name = "langchain-openai", specifier = ">=0.2.11" },
     { name = "matplotlib", specifier = ">=3.9.3" },
     { name = "neo4j", specifier = ">=5.27.0" },

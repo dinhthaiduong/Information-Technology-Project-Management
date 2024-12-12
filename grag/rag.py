@@ -19,10 +19,9 @@ from .utils import (
     batchs,
 )
 import google.generativeai as genai
-
+from groq import Groq
 
 regrex_input = re.compile(r"\[(.*)\]", re.DOTALL)
-
 
 def vaild_entity(entity: list[str]) -> bool:
     if len(entity) < 3:
@@ -46,6 +45,8 @@ class ModelAddapter:
         elif provider == "google":
             genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
             self.client_google: genai.GenerativeModel = genai.GenerativeModel(model)
+        elif provider == "groq":
+            self.client_groq: Groq = Groq(api_key=os.getenv("GROQ_API_KEY") or "")
         else:
             raise ValueError("invaid provider")
 
@@ -69,6 +70,18 @@ class ModelAddapter:
         elif self.provider == "google":
             response = self.client_google.generate_content(messages[0]["content"])
             return response.text
+        elif self.provider == "groq":
+            completion = self.client_groq.chat.completions.create(
+                model=self.model,
+                messages=messages,
+                temperature=1,
+                max_tokens=1024,
+                top_p=1,
+                stop=None,
+            )
+            return completion.choices[0].message.content or ""
+    # for chunk in completion:
+#     print(chunk.choices[0].delta.content or "", end="")
 
         return ""
 
