@@ -146,6 +146,10 @@ class GraphRag:
         chat_res_content = await self.client.chat(
             [
                 {
+                    "role": "system",
+                    "content": PROMPT["SYSTEM_INTRUCT"],
+                },
+                {
                     "role": "user",
                     "content": PROMPT["EXTRACT_ENTITY_RELATIONSHIP"].format(
                         input_text=text

@@ -44,7 +44,7 @@ class HybirdRag:
         chat_res = await self.graph_rag.chat_create_entity_type(question)
         entities = self.graph_rag.get_entities_from_chat_no_filter(chat_res)
 
-        output = []
+        output: set[str] = set()
         vector_entities: list[str] = []
         vector_types: set[str] = set()
         queries = []
@@ -61,38 +61,42 @@ class HybirdRag:
 
         queries.append(QUERY["match_list"].format(ids=",".join(vector_entities)))
 
+        for e_type in vector_types:
+            queries.append(QUERY["match_type"].format(type=e_type))
+
         for query in queries:
             records, _, _ = self.graph_rag.db.execute_query(query)
 
             if len(records) > 0:
-                output.append(records[0]["e.description"])
+                output.add(records[0].get("e.description", ""))
 
             for record in records:
-                output.append(record["r.description"])
-                output.append(record["e2.description"])
+                output.add(record["r.description"])
+                output.add(record["e2.description"])
 
-        for e_type in vector_types:
-            query = QUERY["match_type"].format(type=e_type)
-            records, _, _ = self.graph_rag.db.execute_query(query)
+        # for e_type in vector_types:
+        #     query = QUERY["match_type"].format(type=e_type)
+        #     records, _, _ = self.graph_rag.db.execute_query(query)
+        #
+        #     if len(records) > 0:
+        #         output.append(records[0].get("e.description", ""))
+        #
+        #     for record in records:
+        #         output.append(record["r.description"])
+        #         output.append(record["e2.description"])
 
-            if len(records) > 0:
-                output.append(records[0].get("e.description", ""))
-
-            for record in records:
-                output.append(record["r.description"])
-                output.append(record["e2.description"])
-
-        output_nearest = self.entity_rag.similality(question, output, 50)
+        output_nearest = self.entity_rag.similality(question, list(output), 50)
 
         if len(output_nearest) < 10:
             output_nearest.extend(self.doc_rag.query(question, top_k=2))
 
         print("text recive docs len: ", len(output_nearest))
-        print(chat_res, entities)
+        print(entities)
 
         prompt = PROMPT["CHAT"].format(
             question=question, received="\n".join(output_nearest)
         )
+        print(prompt)
 
         ans = await self.graph_rag.client.chat([{"role": "user", "content": prompt}])
         return (ans, output_nearest)

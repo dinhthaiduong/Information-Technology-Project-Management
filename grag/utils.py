@@ -6,7 +6,7 @@ import numpy as np
 import os
 import re
 
-from grag.prompts import PROMPT
+from grag.prompts import SPECIAL_CHARS
 
 
 class RagMode(Enum):
@@ -19,19 +19,24 @@ def create_work_dir(path: str) -> None:
         return
 
     os.mkdir(path)
-    git_ignore_file = open(path + ".gitignore", 'w')
-    _ = git_ignore_file.write("*") 
+    git_ignore_file = open(path + ".gitignore", "w")
+    _ = git_ignore_file.write("*")
     git_ignore_file.close()
 
-T = TypeVar('T')
+
+T = TypeVar("T")
+
+
 def batchs(lst: list[T], n: int):
     for i in range(0, len(lst), n):
-        yield lst[i:i + n]
+        yield lst[i : i + n]
+
 
 def is_or_default(value: T, check: T, default: T) -> T:
     if value != check:
         return value
     return default
+
 
 def split_text_into_chunks(text: str, max_length: int = 4000) -> list[str]:
     sentences = sent_tokenize(text)
@@ -50,12 +55,16 @@ def split_text_into_chunks(text: str, max_length: int = 4000) -> list[str]:
 
     return chunks
 
-normalize_db_string_pattern = re.compile('[' + re.escape(''.join(PROMPT["SPECIAL_CHARS"])) + ']')
+
+normalize_db_string_pattern = re.compile("[" + re.escape("".join(SPECIAL_CHARS)) + "]")
+
+
 def normalize_db_string(text: str):
-    return normalize_db_string_pattern.sub('', text).strip()
+    return normalize_db_string_pattern.sub("", text).strip()
 
 
 lemmatizer = WordNetLemmatizer()
+
 
 def extract_verbs(sentence: str) -> str:
     tokens = word_tokenize(sentence)
