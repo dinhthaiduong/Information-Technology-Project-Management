@@ -93,16 +93,17 @@ class GraphRag:
         self,
         work_dir: str,
         model: str,
-        db_uri: str,
-        auth: tuple[str, str],
         *,
+        db_uri: str | None = None,
+        db_auth: tuple[str, str] | None = None,
         mode: RagMode = RagMode.QUERY,
         host: str = "http://localhost:11434",
     ) -> None:
         self.client: ModelAddapter = ModelAddapter(model=model, host=host)
         self.model: str = model
         self.work_dir: str = work_dir
-        self.db: Driver = GraphDatabase.driver(db_uri, auth=auth)
+        if db_uri is not None and db_auth is not None:
+            self.db: Driver = GraphDatabase.driver(db_uri, auth=db_auth)
         self.entities_vk: dict[str, list[str]] = dict()
         self.on_wait_entities: list[list[str]] = []
         self.lookup_exsist_db: set[str] = set()

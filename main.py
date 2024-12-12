@@ -40,8 +40,8 @@ async def main():
 async def hybrid_rag():
     graph_rag = GraphRag(
         WORK_DIR,
-        "google/gemini-1.5-flash-8b",
-        # "ollama/qwen2",
+        # "google/gemini-1.5-flash-8b",
+        "ollama/qwen2",
         # "openai/gpt-4o-mini",
         # "ollama/llama3.2",
         os.getenv("BOLT_URI") or "bolt://localhost:7687",

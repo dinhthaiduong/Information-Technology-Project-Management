@@ -3,6 +3,7 @@ version: '3.0'
 volumes:
   gg-neo4j:
   uet2-neo4j:
+  test2-neo4j:
 
 services:
   neo4j:
@@ -17,6 +18,6 @@ services:
         required: true
 
     volumes:
-      - gg-neo4j:/data
+      - test2-neo4j:/data
 
 
