@@ -44,8 +44,8 @@ async def hybrid_rag():
         "ollama/qwen2",
         # "openai/gpt-4o-mini",
         # "ollama/llama3.2",
-        os.getenv("BOLT_URI") or "bolt://localhost:7687",
-        (NEO4J_USER, NEO4J_PASSWORD),
+        db_uri=os.getenv("BOLT_URI") or "bolt://localhost:7687",
+        db_auth=(NEO4J_USER, NEO4J_PASSWORD),
         mode=RagMode.Create,
     )
 
