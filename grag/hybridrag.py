@@ -21,7 +21,10 @@ class HybirdRag:
     ) -> None:
         self.graph_rag: GraphRag = graph_rag
         self.entity_rag: VectorRag = VectorRag(
-            graph_rag.work_dir, model=vector_model, embed_len=embed_len, save_file="entites_hybird.parquet"
+            graph_rag.work_dir,
+            model=vector_model,
+            embed_len=embed_len,
+            save_file="entites_hybird.parquet",
         )
         self.doc_rag: VectorRag = vector_rag
 
@@ -85,19 +88,27 @@ class HybirdRag:
         #         output.append(record["r.description"])
         #         output.append(record["e2.description"])
 
-        output_nearest = self.entity_rag.similality(question, list(output), 50)
+        output_nearest = self.entity_rag.similality(question, list(output), 30)
 
-        if len(output_nearest) < 10:
-            output_nearest.extend(self.doc_rag.query(question, top_k=2))
+        output_prompt: set[str] = set()
+        output_prompt.add(self.doc_rag.query(question, top_k=1)[0])
+        for text in output_nearest:
+            output_prompt.add(text)
+
 
         print("text recive docs len: ", len(output_nearest))
         print(entities)
 
-        prompt = PROMPT["CHAT"].format(
-            question=question, received="\n".join(output_nearest)
-        )
-        print(prompt)
+        org_doc: set[str] = set()
+        print(output_prompt)
+        for out in output_prompt:
+            if out == "":
+                continue
+            org_doc.add(get_index_or(self.doc_rag.query(out, top_k=1), 0, ""))
 
+        org_doc = org_doc.union(output_prompt)
+        prompt = PROMPT["CHAT"].format(question=question, received="\n".join(org_doc))
+        print(prompt)
         ans = await self.graph_rag.client.chat([{"role": "user", "content": prompt}])
         return (ans, output_nearest)
 

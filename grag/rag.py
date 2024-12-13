@@ -350,6 +350,11 @@ class GraphRag:
             e1=entity[1], e2=entity[2], relation=relation, description=entity[3]
         )
 
+    def write_to_file(self) -> None:
+        entities_vk_file = open(self.work_dir + "kv_entity_relationship.json", "w")
+        json.dump(self.entities_vk, entities_vk_file, ensure_ascii=False)
+        entities_vk_file.close()
+
     def write_to_db(self) -> int:
         query_log_file = open(self.work_dir + "query.log", "a")
         lookup_set = self.lookup_exsist_db
@@ -384,7 +389,5 @@ class GraphRag:
         self.on_wait_updating = []
         self.on_wait_entities = []
         query_log_file.close()
-        entities_vk_file = open(self.work_dir + "kv_entity_relationship.json", "w")
-        json.dump(self.entities_vk, entities_vk_file, ensure_ascii=False)
-        entities_vk_file.close()
+        self.write_to_file()
         return count

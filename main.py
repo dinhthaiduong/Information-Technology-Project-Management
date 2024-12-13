@@ -19,7 +19,7 @@ header = st.container()
 
 _ = load_dotenv()
 
-WORK_DIR = ".test_gemini/"
+WORK_DIR = ".test_dd/"
 NEO4J_AUTH = os.getenv("NEO4J_AUTH") or "neo4j/password"
 NEO4J_USER, NEO4J_PASSWORD = NEO4J_AUTH.split("/")
 
@@ -107,6 +107,7 @@ async def hybrid_rag():
 
     if uploaded:
         hybrid_rag.reload_vector_store()
+        hybrid_rag.doc_rag.save()
 
     st.session_state.messages1 = []
     # Initialize chat history

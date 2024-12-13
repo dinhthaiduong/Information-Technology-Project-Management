@@ -38,7 +38,7 @@ def is_or_default(value: T, check: T, default: T) -> T:
     return default
 
 
-def split_text_into_chunks(text: str, max_length: int = 4000) -> list[str]:
+def split_text_into_chunks(text: str, max_length: int = 2000) -> list[str]:
     sentences = sent_tokenize(text)
     chunks = []
     current_chunk = ""

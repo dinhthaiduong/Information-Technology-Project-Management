@@ -1,11 +1,12 @@
 PROMPT: dict[str, str | list[str]] = {}
 
 SPECIAL_CHARS = ["\\", '"']
+# MATCH (n) DETACH DELETE n;
 
 PROMPT["SYSTEM_INTRUCT"] = """
 Do the following:
 0. Don't write any code.
-1. Get all the entities and find out it is a location, organization, person, geo or event, ....
+1. Get all the entities and find out it is a location, organization, person, geo or event, .... Get it description and important keyword.
 2. Get all relationship of one entity to other entities from the input text. The relationship can be any thing from help, create, friend with, a componenet of, ...
 3. Return it as in the format of ("entity", ..., ...  ) for the entity type or ("relationship", ..., ....) the relationship type. Don't give any empty output. It always started with either entity or a relationship 
 
