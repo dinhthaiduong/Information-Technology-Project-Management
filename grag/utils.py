@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import Any, TypeVar
-from nltk import sent_tokenize, word_tokenize, pos_tag
+from nltk import word_tokenize, pos_tag
 from nltk.stem import WordNetLemmatizer
 from langchain.text_splitter import TokenTextSplitter
 import numpy as np

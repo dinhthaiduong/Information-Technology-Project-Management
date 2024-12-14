@@ -19,7 +19,6 @@ WORK_DIR = ".test_dd5/"
 NEO4J_AUTH = os.getenv("NEO4J_AUTH") or "neo4j/password"
 NEO4J_USER, NEO4J_PASSWORD = NEO4J_AUTH.split("/")
 
-
 async def main():
     with st.sidebar:
         choice = option_menu("Navigation", ["Graph Rag"])
