@@ -81,7 +81,7 @@ class VectorRag:
                     ],
                 }
             )
-            .top_k(top_k, by="cosine")["text"]
+            .bottom_k(top_k, by="cosine")["text"]
             .to_list()
         )
 
@@ -100,7 +100,7 @@ class VectorRag:
                     return_dtype=pl.Float64,
                 ),
             }
-        ).top_k(top_k, by=pl.col("cosine"))
+        ).bottom_k(top_k, by=pl.col("cosine"))
 
         selected_text = query_df.join(self.vectors, on="index").sort(
             by="cosine", descending=True

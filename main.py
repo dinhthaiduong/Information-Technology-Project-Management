@@ -89,10 +89,10 @@ async def hybrid_rag():
                 else:
                     content = file.read().decode()
                     chunks = split_text_into_chunks(content)
-                    total_batchs = list(batchs(chunks, 1))
+                    total_batchs = list(batchs(chunks, 5))
                     for idx, chunk in enumerate(tqdm(total_batchs)):
                         # _ = st.progress(idx / len(total_batchs))
-                        _ = await hybrid_rag.insert(chunk, batch=1)
+                        _ = await hybrid_rag.insert(chunk, batch=5)
 
                         if idx % 4 == 0:
                             inserted = hybrid_rag.graph_rag.write_to_db()

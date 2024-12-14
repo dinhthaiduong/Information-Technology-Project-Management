@@ -53,6 +53,8 @@ class HybirdRag:
         for entity in entities:
             if entity[0] == "entity":
                 vector_types.add(entity[1].capitalize())
+                if len(entity) < 2:
+                    continue
                 for en in self.entity_rag.query(entity[2]):
                     en_c = '"' + en.capitalize() + '"'
                     vector_entities.append(en_c)
@@ -86,26 +88,15 @@ class HybirdRag:
         #         output.append(record["r.description"])
         #         output.append(record["e2.description"])
 
-        output_nearest = self.entity_rag.similality(question, list(output), 30)
+        output_nearest = self.entity_rag.similality(question, list(output), 50)
 
-        output_prompt: set[str] = set()
-        output_prompt.add(self.doc_rag.query(question, top_k=1)[0])
-        for text in output_nearest:
-            output_prompt.add(text)
+        output_prompt: set[str] = set(output_nearest)
+        if len(output_nearest) > 1:
+            output_prompt.add(self.doc_rag.query(output_nearest[0], top_k=1)[0])
 
+        print("text recive docs len: ", len(output_prompt))
 
-        print("text recive docs len: ", len(output_nearest))
-        print(entities)
-
-        org_doc: set[str] = set()
-        print(output_prompt)
-        for out in output_prompt:
-            if out == "":
-                continue
-            org_doc.add(get_index_or(self.doc_rag.query(out, top_k=1), 0, ""))
-
-        org_doc = org_doc.union(output_prompt)
-        prompt = PROMPT["CHAT"].format(question=question, received="\n".join(org_doc))
+        prompt = PROMPT["CHAT"].format(question=question, received=".".join(output_prompt))
         print(prompt)
         ans = await self.graph_rag.client.chat([{"role": "user", "content": prompt}])
         return (ans, output_nearest)

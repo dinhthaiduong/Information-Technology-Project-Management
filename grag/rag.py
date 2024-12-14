@@ -188,8 +188,11 @@ class GraphRag:
                     splited = re.findall(r'"([^"]*)"', entity)
                     normarlized = []
                     for idx, text in enumerate(splited):
-                        if idx == 1 or idx == 2:
+                        if idx == 1:
                             normarlized.append(normalize_db_string(text).capitalize())
+                            continue
+                        elif idx == 2:
+                            normarlized.append(normalize_db_string(text))
                             continue
 
                         normarlized.append(normalize_db_string(text))
