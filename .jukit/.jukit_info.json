@@ -1,1 +1,1 @@
-{"cmd": "\n# vec_rag.query(\"thợ nuôi ong\")\n# vec_rag.query(\"bee\")\n\nvec_rag.query(\"Nguyễn Việt Hà\")\n# vec_rag.query(\"People\")\n", "cmd_opts": " --cell_id=59DNQedlWD -s", "import_complete": 1, "terminal": "nvimterm"}
+{"cmd": "\n# vec_rag.query(\"thợ nuôi ong\")\n# vec_rag.query(\"bee\")\nvec_rag.query(\"hiệu trưởng\")\n# vec_rag.query(\"People\")\n", "cmd_opts": " --cell_id=59DNQedlWD -s", "import_complete": 1, "terminal": "nvimterm"}

@@ -2,6 +2,7 @@ from enum import Enum
 from typing import Any, TypeVar
 from nltk import sent_tokenize, word_tokenize, pos_tag
 from nltk.stem import WordNetLemmatizer
+from langchain.text_splitter import TokenTextSplitter
 import numpy as np
 import os
 import re
@@ -38,22 +39,24 @@ def is_or_default(value: T, check: T, default: T) -> T:
     return default
 
 
-def split_text_into_chunks(text: str, max_length: int = 2000) -> list[str]:
-    sentences = sent_tokenize(text)
-    chunks = []
-    current_chunk = ""
-
-    for sentence in sentences:
-        if len(current_chunk) + len(sentence) <= max_length:
-            current_chunk += " " + sentence
-        else:
-            chunks.append(current_chunk.strip())
-            current_chunk = ""
-
-    if current_chunk:
-        chunks.append(current_chunk.strip())
-
-    return chunks
+text_spliter = TokenTextSplitter(chunk_size=1000, chunk_overlap=300)
+def split_text_into_chunks(text: str, _max_length: int = 2000) -> list[str]:
+    return text_spliter.split_text(text)
+    # sentences = sent_tokenize(text)
+    # chunks = []
+    # current_chunk = ""
+    #
+    # for sentence in sentences:
+    #     if len(current_chunk) + len(sentence) <= max_length:
+    #         current_chunk += " " + sentence
+    #     else:
+    #         chunks.append(current_chunk.strip())
+    #         current_chunk = ""
+    #
+    # if current_chunk:
+    #     chunks.append(current_chunk.strip())
+    #
+    # return chunks
 
 
 normalize_db_string_pattern = re.compile("[" + re.escape("".join(SPECIAL_CHARS)) + "]")

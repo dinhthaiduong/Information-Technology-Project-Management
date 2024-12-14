@@ -19,7 +19,7 @@ header = st.container()
 
 _ = load_dotenv()
 
-WORK_DIR = ".test_dd/"
+WORK_DIR = ".test_dd3/"
 NEO4J_AUTH = os.getenv("NEO4J_AUTH") or "neo4j/password"
 NEO4J_USER, NEO4J_PASSWORD = NEO4J_AUTH.split("/")
 
@@ -85,6 +85,7 @@ async def hybrid_rag():
                         _ = await hybrid_rag.insert(chunks, batch=1)
 
                         if idx % 4 == 0:
+                            hybrid_rag.doc_rag.save()
                             inserted = hybrid_rag.graph_rag.write_to_db()
                             print("Insert ", str(inserted), " value")
 
@@ -98,6 +99,7 @@ async def hybrid_rag():
 
                         if idx % 4 == 0:
                             inserted = hybrid_rag.graph_rag.write_to_db()
+                            hybrid_rag.doc_rag.save()
                             print("Insert ", str(inserted), " value")
 
                 inserted = hybrid_rag.graph_rag.write_to_db()
