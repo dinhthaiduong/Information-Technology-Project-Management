@@ -19,12 +19,9 @@ header = st.container()
 
 _ = load_dotenv()
 
-WORK_DIR = ".test_dd3/"
+WORK_DIR = ".test_dd5/"
 NEO4J_AUTH = os.getenv("NEO4J_AUTH") or "neo4j/password"
 NEO4J_USER, NEO4J_PASSWORD = NEO4J_AUTH.split("/")
-
-# TMP_DIR = Path(__file__).resolve().parent.parent.joinpath("data", "tmp")
-
 
 async def main():
     with st.sidebar:
@@ -143,8 +140,8 @@ def show_graph():
     _ = st.title("Neo4j Graph Visualization")
 
     uri = os.getenv("BOLT_URI") or "bolt://localhost:7687"
-    user = os.getenv("NEO4J_USER") or "neo4j"
-    password = os.getenv("NEO4J_PASSWORD") or "password"
+    user = NEO4J_USER or "neo4j"
+    password = NEO4J_PASSWORD or "password"
 
     # Create a load graph button
     if st.button("Load Graph"):

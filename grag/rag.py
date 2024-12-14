@@ -5,7 +5,8 @@ from collections.abc import  Mapping, Sequence
 from ollama import AsyncClient as Ollama, Message
 import asyncio
 from openai import AsyncClient as OpenAI
-from .prompts import PROMPT, QUERY
+from .prompts import PROMPT
+from .query import QUERY
 import os
 import json
 from neo4j import Driver, GraphDatabase

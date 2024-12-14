@@ -1,13 +1,11 @@
 from dataclasses import dataclass
 
-from safetensors.torch import save_file
-from grag.prompts import PROMPT, QUERY
+from grag.prompts import PROMPT
+from grag.query import QUERY
 from grag.rag import GraphRag
 from grag.utils import create_work_dir, get_index_or
 from grag.vectrag import VectorRag
 import os
-import polars as pl
-
 
 @dataclass
 class HybirdRag:

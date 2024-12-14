@@ -39,8 +39,8 @@ def is_or_default(value: T, check: T, default: T) -> T:
     return default
 
 
-text_spliter = TokenTextSplitter(chunk_size=1000, chunk_overlap=300)
-def split_text_into_chunks(text: str, _max_length: int = 2000) -> list[str]:
+text_spliter = TokenTextSplitter(chunk_size=5000, chunk_overlap=10)
+def split_text_into_chunks(text: str, _: int = 2000) -> list[str]:
     return text_spliter.split_text(text)
     # sentences = sent_tokenize(text)
     # chunks = []

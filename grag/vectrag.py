@@ -5,12 +5,8 @@ from ollama import Client
 import os
 import numpy as np
 from dataclasses import dataclass
-from grag.prompts import QUERY
+from grag.query import QUERY
 from grag.utils import create_work_dir
-# from sentence_transformers import SentenceTransformer
-# sentences = ["This is an example sentence", "Each sentence is converted"]
-# model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
-
 
 @dataclass
 class VectorRag:
@@ -37,7 +33,8 @@ class VectorRag:
             schema={
                 "index": pl.UInt64,
                 "text": pl.String,
-                "embed": pl.Array(pl.Float64, embed_len),
+                # "embed": pl.Array(pl.Float64, embed_len),
+                "embed": pl.List(pl.Float64),
             },
             # schema={"text": pl.String, "embed": pl.List(pl.Float64)},
         )
@@ -46,7 +43,7 @@ class VectorRag:
         if os.path.exists(self.save_file):
             self.vectors = pl.read_parquet(self.save_file)
 
-    def insert(self, text: list[str] | pl.Series) -> None:
+    def insert(self, text: list[str]) -> None:
         res = self.client.embed(self.model, text)
         rows_len = self.vectors.shape[0]
         self.vectors = self.vectors.extend(
@@ -56,12 +53,12 @@ class VectorRag:
                         range(rows_len, rows_len + len(text)), dtype=pl.UInt64
                     ),
                     "text": text,
-                    # "embed": res.embeddings,
+                    "embed": res.embeddings,
                     # "embed": [np.array(embed) for embed in res.embeddings],
-                    "embed": [
-                        embed / np.linalg.norm(embed)
-                        for embed in [np.array(embed) for embed in res.embeddings]
-                    ],
+                    # "embed": [
+                    #     embed / np.linalg.norm(embed)
+                    #     for embed in [np.array(embed) for embed in res.embeddings]
+                    # ],
                 }
             )
         )
@@ -79,14 +76,16 @@ class VectorRag:
             pl.DataFrame(
                 {
                     "text": corpus,
-                    "cosine": [np.dot(text_embed, embed) for embed in corpus_embed],
+                    "cosine": [
+                        np.linalg.norm(text_embed - embed) for embed in corpus_embed
+                    ],
                 }
             )
             .top_k(top_k, by="cosine")["text"]
             .to_list()
         )
 
-    def query(self, text: str, *,top_k: int=10) -> list[str]:
+    def query(self, text: str, *, top_k: int = 10) -> list[str]:
         embed = np.array(self.client.embed(self.model, text).embeddings)
         embed = embed / np.linalg.norm(embed)
 
@@ -95,7 +94,9 @@ class VectorRag:
             {
                 "index": self.vectors["index"],
                 "cosine": vector.map_elements(
-                    lambda other: np.dot(embed, np.array(other)),  # cosine similality
+                    lambda other: np.linalg.norm(
+                        embed - np.array(other)
+                    ),  # cosine similality
                     return_dtype=pl.Float64,
                 ),
             }
@@ -127,10 +128,11 @@ class VectorRag:
                     range(rows_len, rows_len + len(ids_unique)), dtype=pl.UInt64
                 ),
                 "text": ids_unique,
-                "embed": [
-                    embed / np.linalg.norm(embed)
-                    for embed in [np.array(embed) for embed in res.embeddings]
-                ],
+                "embed": res.embeddings,
+                # "embed": [
+                #     embed / np.linalg.norm(embed)
+                #     for embed in [np.array(embed) for embed in res.embeddings]
+                # ],
             }
         )
         self.save()
