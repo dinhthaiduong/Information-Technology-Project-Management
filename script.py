@@ -15,8 +15,8 @@ NEO4J_USER, NEO4J_PASSWORD = NEO4J_AUTH.split("/")
 
 graph_rag = RagAsync(
     WORK_DIR,
-    "openai/gpt-4o-mini",
-    # "groq/llama3-70b-8192",
+    # "openai/gpt-4o-mini",
+    "groq/llama3-70b-8192",
     db_uri=os.getenv("BOLT_URI") or "bolt://localhost:7687",
     db_auth=(NEO4J_USER, NEO4J_PASSWORD),
 )

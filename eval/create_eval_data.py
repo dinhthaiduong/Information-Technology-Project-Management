@@ -19,7 +19,8 @@ async def main():
 
     graph_rag = RagAsync(
         sys.argv[1],
-        "openai/gpt-4o-mini",
+        # "openai/gpt-4o-mini",
+        "groq/llama3-70b-8192",
         os.getenv("BOLT_URI") or "bolt://127.0.0.1:7687",
         (NEO4J_USER, NEO4J_PASSWORD),
     )
