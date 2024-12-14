@@ -1,9 +1,9 @@
 import json
-from tqdm import tqdm
-from grag.hybridrag import HybirdRag
-from grag.rag import GraphRag
+from accelerate.utils import tqdm
+from grag.async_client import RagAsync
 from dotenv import load_dotenv
 import asyncio
+import sys
 import os
 
 _ = load_dotenv()
@@ -14,22 +14,20 @@ async def main():
 
     questions = json.load(questions_file)
     questions_file.close()
-    NEO4J_AUTH = os.getenv("NEO4J_USER") or "neo4j/password"
+    NEO4J_AUTH = os.getenv("NEO4J_AUTH") or "neo4j/password"
     NEO4J_USER, NEO4J_PASSWORD = NEO4J_AUTH.split("/")
 
-    graph_rag = GraphRag(
-        ".embed/",
+    graph_rag = RagAsync(
+        sys.argv[1],
         "openai/gpt-4o-mini",
-        db_uri=os.getenv("BOLT_URI") or "bolt://127.0.0.1:7687",
-        auth=(NEO4J_USER, NEO4J_PASSWORD),
+        os.getenv("BOLT_URI") or "bolt://127.0.0.1:7687",
+        (NEO4J_USER, NEO4J_PASSWORD),
     )
-
-    hybird_rag = HybirdRag(graph_rag)
 
     eval_ragcheck = {"results": []}
     eval_ragas = []
     for idx, question in enumerate(tqdm(questions)):
-        ans, retrieved_context = await hybird_rag.chat(question["Q"])
+        ans, retrieved_context = await graph_rag.chat(question["Q"])
 
         eval_ragcheck["results"].append(
             {
