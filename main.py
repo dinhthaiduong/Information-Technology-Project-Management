@@ -3,17 +3,13 @@ from streamlit_option_menu import option_menu
 import streamlit as st
 from neo4j import GraphDatabase, Record
 import networkx as nx
-from grag.rag import GraphRag
-from grag.hybridrag import HybirdRag
-from grag.utils import RagMode, batchs, split_text_into_chunks
+from grag.async_client import RagAsync
+from grag.utils import split_text_into_chunks
 from dotenv import load_dotenv
 import os
 from pyvis.network import Network
 import streamlit.components.v1 as components
 from pypdf import PdfReader
-from tqdm import tqdm
-
-from grag.vectrag import VectorRag
 
 header = st.container()
 
@@ -22,6 +18,7 @@ _ = load_dotenv()
 WORK_DIR = ".test_dd5/"
 NEO4J_AUTH = os.getenv("NEO4J_AUTH") or "neo4j/password"
 NEO4J_USER, NEO4J_PASSWORD = NEO4J_AUTH.split("/")
+
 
 async def main():
     with st.sidebar:
@@ -37,7 +34,7 @@ async def main():
 
 
 async def hybrid_rag():
-    graph_rag = GraphRag(
+    graph_rag = RagAsync(
         WORK_DIR,
         # "google/gemini-1.5-flash-8b",
         # "ollama/qwen2",
@@ -46,16 +43,11 @@ async def hybrid_rag():
         # "ollama/llama3.2",
         db_uri=os.getenv("BOLT_URI") or "bolt://localhost:7687",
         db_auth=(NEO4J_USER, NEO4J_PASSWORD),
-        mode=RagMode.Create,
     )
-
-    vector_rag = VectorRag(WORK_DIR, save_file="docrag.parquet")
-    hybrid_rag = HybirdRag(graph_rag, vector_rag)
 
     choice = option_menu("Options", ["Upload document", "Chat"])
     flag = 0
 
-    uploaded = False
     if choice == "Upload document":
         flag = 1
         files = st.file_uploader(
@@ -67,47 +59,21 @@ async def hybrid_rag():
         if not files:
             _ = st.warning("Please upload a document")
         else:
-            uploaded = True
             for file in files:
                 file_extension = file.name.split(".")[-1]
                 if file_extension == "pdf":
                     file_pdf = PdfReader(file)
                     pages_text = [page.extract_text() for page in file_pdf.pages]
-                    page_batchs = list(batchs(pages_text, 1))
-                    for idx, pages in enumerate(tqdm(page_batchs)):
-                        _ = st.progress(idx / len(page_batchs))
-                        chunks = split_text_into_chunks(
-                            "\n".join([page for page in pages])
-                        )
-                        _ = await hybrid_rag.insert(chunks, batch=1)
-
-                        if idx % 4 == 0:
-                            hybrid_rag.doc_rag.save()
-                            inserted = hybrid_rag.graph_rag.write_to_db()
-                            print("Insert ", str(inserted), " value")
-
+                    await graph_rag.insert(pages_text, 4)
                 else:
                     content = file.read().decode()
                     chunks = split_text_into_chunks(content)
-                    total_batchs = list(batchs(chunks, 5))
-                    for idx, chunk in enumerate(tqdm(total_batchs)):
-                        # _ = st.progress(idx / len(total_batchs))
-                        _ = await hybrid_rag.insert(chunk, batch=5)
+                    await graph_rag.insert(chunks, 4)
 
-                        if idx % 4 == 0:
-                            inserted = hybrid_rag.graph_rag.write_to_db()
-                            hybrid_rag.doc_rag.save()
-                            print("Insert ", str(inserted), " value")
-
-                inserted = hybrid_rag.graph_rag.write_to_db()
-                print("Insert ", str(inserted), " value")
     else:
         show_graph()
 
-    if uploaded:
-        hybrid_rag.reload_vector_store()
-        hybrid_rag.doc_rag.save()
-
+    graph_rag.update_db()
     st.session_state.messages1 = []
     # Initialize chat history
     if "messages" not in st.session_state:
@@ -126,7 +92,7 @@ async def hybrid_rag():
                 _ = st.chat_message("user").markdown(message["context"])
 
             response1 = f"Echo: {prompt1}"
-            response1, _ = await hybrid_rag.chat(prompt1)
+            response1, _ = await graph_rag.chat(prompt1)
 
             with st.chat_message("assistant"):
                 _ = st.markdown(response1)
@@ -140,8 +106,8 @@ def show_graph():
     _ = st.title("Neo4j Graph Visualization")
 
     uri = os.getenv("BOLT_URI") or "bolt://localhost:7687"
-    user = NEO4J_USER or "neo4j"
-    password = NEO4J_PASSWORD or "password"
+    user = NEO4J_USER
+    password = NEO4J_PASSWORD
 
     # Create a load graph button
     if st.button("Load Graph"):

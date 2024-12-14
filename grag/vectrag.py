@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from grag.query import QUERY
 from grag.utils import create_work_dir
 
+
 @dataclass
 class VectorRag:
     def __init__(

@@ -19,6 +19,7 @@ _ = load_dotenv()
 
 WORK_DIR = ".no_db/"
 
+
 async def main():
     with st.sidebar:
         choice = option_menu("Navigation", ["Graph Rag"])
@@ -111,6 +112,7 @@ async def hybrid_rag():
             st.session_state.messages1.append(
                 {"role": "assistant", "content": response1}
             )
+
 
 def show_graph():
     _ = st.title("Neo4j Graph Visualization")

@@ -47,16 +47,17 @@ async def main():
             }
         )
 
-        eval_ragas.append({
-            "user_input": question["Q"],
-            "retrieved_contexts": retrieved_context,
-            "response": ans
-
-        })
+        eval_ragas.append(
+            {
+                "user_input": question["Q"],
+                "retrieved_contexts": retrieved_context,
+                "response": ans,
+            }
+        )
     ragcheck_file = open("examples/ragcheck_input.json", "w")
     ragas_file = open("examples/ragas_input.json", "w")
     json.dump(eval_ragcheck, ragcheck_file)
-    json.dump(eval_ragas, ragas_file )
+    json.dump(eval_ragas, ragas_file)
     ragcheck_file.close()
     ragas_file.close()
 

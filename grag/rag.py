@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import re
 from typing import Any
-from collections.abc import  Mapping, Sequence
+from collections.abc import Mapping, Sequence
 from ollama import AsyncClient as Ollama, Message
 import asyncio
 from openai import AsyncClient as OpenAI
@@ -23,6 +23,7 @@ import google.generativeai as genai
 from groq import Groq
 
 regrex_input = re.compile(r"\[(.*)\]", re.DOTALL)
+
 
 def vaild_entity(entity: list[str]) -> bool:
     if len(entity) < 3:
@@ -81,8 +82,8 @@ class ModelAddapter:
                 stop=None,
             )
             return completion.choices[0].message.content or ""
-    # for chunk in completion:
-#     print(chunk.choices[0].delta.content or "", end="")
+        # for chunk in completion:
+        #     print(chunk.choices[0].delta.content or "", end="")
 
         return ""
 
@@ -155,7 +156,7 @@ class GraphRag:
                     "content": PROMPT["EXTRACT_ENTITY_RELATIONSHIP"].format(
                         input_text=text
                     ),
-                }
+                },
             ]
         )
 

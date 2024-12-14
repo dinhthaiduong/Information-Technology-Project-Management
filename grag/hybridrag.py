@@ -7,6 +7,7 @@ from grag.utils import create_work_dir, get_index_or
 from grag.vectrag import VectorRag
 import os
 
+
 @dataclass
 class HybirdRag:
     def __init__(
@@ -96,7 +97,9 @@ class HybirdRag:
 
         print("text recive docs len: ", len(output_prompt))
 
-        prompt = PROMPT["CHAT"].format(question=question, received=".".join(output_prompt))
+        prompt = PROMPT["CHAT"].format(
+            question=question, received=".".join(output_prompt)
+        )
         print(prompt)
         ans = await self.graph_rag.client.chat([{"role": "user", "content": prompt}])
         return (ans, output_nearest)

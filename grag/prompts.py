@@ -141,7 +141,7 @@ Kể cho tôi nghe về bất kỳ tổ chức nào trong tài liệu?
 """
 
 
-PROMPT_EN: dict[str, str] = {} 
+PROMPT_EN: dict[str, str] = {}
 
 PROMPT_EN["SYSTEM_INTRUCT"] = """
 Do the following:
