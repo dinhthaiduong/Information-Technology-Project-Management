@@ -54,7 +54,7 @@ class HybirdRag:
         for entity in entities:
             if entity[0] == "entity":
                 vector_types.add(entity[1].capitalize())
-                if len(entity) < 2:
+                if len(entity) < 3:
                     continue
                 for en in self.entity_rag.query(entity[2]):
                     en_c = '"' + en.capitalize() + '"'
@@ -87,10 +87,10 @@ class HybirdRag:
             if len(docs_nearest) > 1:
                 output_prompt.add(docs_nearest[0])
 
-        if len(output_nearest) > 1:
-            docs_nearest = self.doc_rag.query(output_nearest[0], top_k=2)
-            if len(docs_nearest) > 1:
-                output_prompt.add(docs_nearest[0])
+        # if len(output_nearest) > 1:
+        #     docs_nearest = self.doc_rag.query(output_nearest[0], top_k=2)
+        #     if len(docs_nearest) > 1:
+        #         output_prompt.add(docs_nearest[0])
 
         print("text recive docs len: ", len(output_prompt))
 
