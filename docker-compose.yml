@@ -6,6 +6,7 @@ volumes:
   test2-neo4j:
   test3-neo4j:
   demo-neo4j:
+  demo2-neo4j:
 
 services:
   neo4j:
@@ -20,6 +21,6 @@ services:
         required: true
 
     volumes:
-      - demo-neo4j:/data
+      - demo2-neo4j:/data
 
 

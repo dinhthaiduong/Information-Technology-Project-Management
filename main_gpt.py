@@ -8,5 +8,5 @@ if __name__ == "__main__":
         # "groq/llama3-70b-8192",
         "openai/gpt-4o-mini",
         # "ollama/llama3.2",
-        50,
+        10,
     )

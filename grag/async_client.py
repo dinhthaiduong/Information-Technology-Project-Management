@@ -26,10 +26,9 @@ class RagAsync:
         for idx, chunk in enumerate(tqdm(total_batchs)):
             _ = await self.hybrid_rag.insert(chunk, batch=async_client + 1)
 
-            if idx % 4 == 0:
-                inserted = self.hybrid_rag.graph_rag.write_to_db()
-                self.hybrid_rag.doc_rag.save()
-                print("Insert ", str(inserted), " value")
+            inserted = self.hybrid_rag.graph_rag.write_to_db()
+            self.hybrid_rag.doc_rag.save()
+            print("Insert ", str(inserted), " value")
 
     async def chat(self, input: str) -> tuple[str, list[str]]:
         return await self.hybrid_rag.chat(input)
