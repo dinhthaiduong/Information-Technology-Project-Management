@@ -11,15 +11,9 @@ from pyvis.network import Network
 import streamlit.components.v1 as components
 from pypdf import PdfReader
 
-header = st.container()
-
-_ = load_dotenv()
-
-WORK_DIR = ".demo/"
-NEO4J_AUTH = os.getenv("NEO4J_AUTH") or "neo4j/password"
-NEO4J_USER, NEO4J_PASSWORD = NEO4J_AUTH.split("/")
-
-async def main():
+async def main(work_dir: str, model: str, n_async_client: int):
+    header = st.container()
+    _ = load_dotenv()
     with st.sidebar:
         choice = option_menu("Navigation", ["Graph Rag"])
 
@@ -29,15 +23,19 @@ async def main():
             st.write(
                 """Hello, I'm UET Mentor, a chatbot that will help you answer questions related to your studies at school"""
             )
-            await hybrid_rag()
+            await hybrid_rag(work_dir, model, n_async_client)
 
 
-async def hybrid_rag():
+async def hybrid_rag(work_dir: str, model: str, n_async_client: int):
+    NEO4J_AUTH = os.getenv("NEO4J_AUTH") or "neo4j/password"
+    NEO4J_USER, NEO4J_PASSWORD = NEO4J_AUTH.split("/")
+
     graph_rag = RagAsync(
-        WORK_DIR,
+        work_dir,
+        model,
         # "google/gemini-1.5-flash-8b",
         # "ollama/qwen2",
-        "groq/llama3-70b-8192",
+        # "groq/llama3-70b-8192",
         # "openai/gpt-4o-mini",
         # "ollama/llama3.2",
         db_uri=os.getenv("BOLT_URI") or "bolt://localhost:7687",
@@ -51,7 +49,7 @@ async def hybrid_rag():
         flag = 1
         files = st.file_uploader(
             label="Upload document",
-            type=["pdf", "json", "jsonl", "txt", "html"],
+            type=["pdf", "json", "jsonl", "txt", "html", "md"],
             accept_multiple_files=True,
         )
 
@@ -63,14 +61,14 @@ async def hybrid_rag():
                 if file_extension == "pdf":
                     file_pdf = PdfReader(file)
                     pages_text = [page.extract_text() for page in file_pdf.pages]
-                    await graph_rag.insert(pages_text, 4)
+                    await graph_rag.insert(pages_text, n_async_client)
                 else:
                     content = file.read().decode()
                     chunks = split_text_into_chunks(content)
-                    await graph_rag.insert(chunks, 4)
+                    await graph_rag.insert(chunks, n_async_client)
 
     else:
-        show_graph()
+        show_graph((NEO4J_USER, NEO4J_PASSWORD))
 
     st.session_state.messages1 = []
     # Initialize chat history
@@ -100,12 +98,12 @@ async def hybrid_rag():
             )
 
 
-def show_graph():
+def show_graph(auth: tuple[str, str]):
     _ = st.title("Neo4j Graph Visualization")
 
     uri = os.getenv("BOLT_URI") or "bolt://localhost:7687"
-    user = NEO4J_USER
-    password = NEO4J_PASSWORD
+    user = auth[0]
+    password = auth[1]
 
     # Create a load graph button
     if st.button("Load Graph"):
@@ -151,5 +149,6 @@ def visualize_graph(g: nx.DiGraph):
     _ = net.show("graph.html")
 
 
-if __name__ == "__main__":
-    asyncio.run(main())
+def demo(work_dir: str, model: str, n_async_client: int):
+    asyncio.run(main(work_dir, model, n_async_client))
+

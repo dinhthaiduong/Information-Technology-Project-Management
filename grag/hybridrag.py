@@ -78,22 +78,19 @@ class HybirdRag:
                 output.add(record["r.description"])
                 output.add(record["e2.description"])
 
-        # for e_type in vector_types:
-        #     query = QUERY["match_type"].format(type=e_type)
-        #     records, _, _ = self.graph_rag.db.execute_query(query)
-        #
-        #     if len(records) > 0:
-        #         output.append(records[0].get("e.description", ""))
-        #
-        #     for record in records:
-        #         output.append(record["r.description"])
-        #         output.append(record["e2.description"])
-
         output_nearest = self.entity_rag.similality(question, list(output), 50)
 
         output_prompt: set[str] = set(output_nearest)
+
+        if len(output_nearest) < 3:
+            docs_nearest = self.doc_rag.query(question, top_k=2)
+            if len(docs_nearest) > 1:
+                output_prompt.add(docs_nearest[0])
+
         if len(output_nearest) > 1:
-            output_prompt.add(self.doc_rag.query(output_nearest[0], top_k=1)[0])
+            docs_nearest = self.doc_rag.query(output_nearest[0], top_k=2)
+            if len(docs_nearest) > 1:
+                output_prompt.add(docs_nearest[0])
 
         print("text recive docs len: ", len(output_prompt))
 

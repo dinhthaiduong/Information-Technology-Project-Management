@@ -33,9 +33,9 @@ MATCH (n) RETURN DISTINCT n.id;
 QUERY["match_list"] = """
 MATCH (e)-[r]-(e2)
 WHERE e.id IN [{ids}]
-RETURN DISTINCT e.description, r.description, e2.description LIMIT 10;
+RETURN DISTINCT e.description, r.description, e2.description LIMIT 120;
 """
 
 QUERY["match_type"] = """
-MATCH (n: `{type}`)-[r]-(e2) RETURN DISTINCT n.description, r.description, e2.description LIMIT 10;
+MATCH (n: `{type}`)-[r]-(e2) RETURN DISTINCT n.description, r.description, e2.description LIMIT 120;
 """

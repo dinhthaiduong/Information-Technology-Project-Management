@@ -9,7 +9,7 @@ Thực hiện các bước sau:
 0. Không viết bất kỳ đoạn mã nào.
 1. Xác định tất cả các thực thể và phân loại chúng thành vị trí, tổ chức, người, địa lý, sự kiện, ... Chi tiết hóa mô tả và từ khóa quan trọng của từng thực thể.
 2. Xác định tất cả các mối quan hệ giữa các thực thể từ văn bản đầu vào. Mối quan hệ có thể là bất kỳ thứ gì, từ giúp đỡ, tạo ra, kết bạn, là một thành phần của, ...
-3. Trả kết quả dưới dạng ("entity", ..., ...) cho loại thực thể hoặc ("relationship", ..., ...) cho loại mối quan hệ. Không trả về kết quả trống. Luôn bắt đầu với "thực thể" hoặc "mối quan hệ".
+3. Trả kết quả dưới dạng ("entity", "loại", "Tên", "mô tả")  cho loại thực thể hoặc ("relationship", "Nút 1", "Nút 2", "mô tả", "từ khóa") cho loại mối quan hệ. Không trả về kết quả trống. Luôn bắt đầu với "thực thể" hoặc "mối quan hệ".
 
 Ví dụ:
 
@@ -57,7 +57,7 @@ Thực hiện các bước sau:
 0. Không viết bất kỳ đoạn mã nào.
 1. Xác định tất cả các thực thể và phân loại chúng thành vị trí, tổ chức, người, địa lý, sự kiện, ...
 2. Xác định tất cả các mối quan hệ giữa các thực thể từ văn bản đầu vào. Mối quan hệ có thể là bất kỳ thứ gì từ giúp đỡ, tạo ra, là bạn với, ...
-3. Trả về kết quả dưới dạng ("entity", ..., ...) cho loại entity hoặc ("relationship", ..., ...) cho loại mối quan hệ. Không trả về kết quả trống. Luôn bắt đầu bằng "entity" hoặc "relationship".
+3. Trả kết quả dưới dạng ("entity", "loại", "Tên", "mô tả")  cho loại thực thể hoặc ("relationship", "Nút 1", "Nút 2", "mô tả", "từ khóa") cho loại mối quan hệ. Không trả về kết quả trống. Luôn bắt đầu với "thực thể" hoặc "mối quan hệ".
 4. Giảm thiểu số lượng thực thể không có mối quan hệ.
 
 Ví dụ:
@@ -86,7 +86,7 @@ Thực hiện các bước sau:
 0. Không viết bất kỳ đoạn mã nào.
 1. Xác định tất cả các thực thể và phân loại chúng thành vị trí, tổ chức, người, địa lý, sự kiện, ...
 2. Xác định tất cả các mối quan hệ giữa các thực thể từ văn bản đầu vào. Mối quan hệ có thể là bất kỳ thứ gì từ giúp đỡ, tạo ra, là bạn với, ...
-3. Trả về kết quả dưới dạng ("entity", ..., ...) cho loại thực thể hoặc ("relationship", ..., ...) cho loại mối quan hệ. Không trả về kết quả trống. Luôn bắt đầu bằng "entity" hoặc "relationship".
+3. Trả kết quả dưới dạng ("entity", "loại", "Tên", "mô tả")  cho loại thực thể hoặc ("relationship", "Nút 1", "Nút 2", "mô tả", "từ khóa") cho loại mối quan hệ. Không trả về kết quả trống. Luôn bắt đầu với "thực thể" hoặc "mối quan hệ".
 4. Tạo thêm các thực thể
 Ví dụ:
 
@@ -148,7 +148,7 @@ Do the following:
 0. Don't write any code.
 1. Get all the entities and find out it is a location, organization, person, geo or event, .... Get it description and important keyword.
 2. Get all relationship of one entity to other entities from the input text. The relationship can be any thing from help, create, friend with, a componenet of, ...
-3. Return it as in the format of ("entity", ..., ...  ) for the entity type or ("relationship", ..., ....) the relationship type. Don't give any empty output. It always started with either entity or a relationship 
+3. Return it as in the format of ("entity", "type", "name", "desctiption") for the entity type or ("relationship", "Node 1", "Node 2", "description", "keywords") the relationship type. Don't give any empty output. It always started with either entity or a relationship 
 
 
 For example:
