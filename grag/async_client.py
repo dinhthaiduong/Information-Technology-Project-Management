@@ -37,3 +37,4 @@ class RagAsync:
     def update_db(self):
         self.hybrid_rag.reload_vector_store()
         self.hybrid_rag.doc_rag.save()
+        self.hybrid_rag.labels_rag.save()

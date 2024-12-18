@@ -104,7 +104,7 @@ class VectorRag:
         ).bottom_k(top_k, by=pl.col("cosine"))
 
         selected_text = query_df.join(self.vectors, on="index").sort(
-            by="cosine", descending=True
+            by="cosine", descending=False
         )
 
         return selected_text["text"].to_list()
@@ -112,7 +112,29 @@ class VectorRag:
     def save(self) -> None:
         self.vectors.write_parquet(self.save_file)
 
-    def from_a_graph_db(self, db: Driver):
+    def from_graph_db_labels(self, db: Driver):
+        records, _, _ = db.execute_query(QUERY["match_labels"])
+        ids: list[str] = [record[0] for record in records]
+        ids_series = pl.Series(ids, dtype=pl.String)
+        ids_unique = ids_series.filter(
+            ids_series.is_in(self.vectors["text"]).not_()
+        ).to_list()
+
+        res = self.client.embed(self.model, ids_unique)
+
+        rows_len = self.vectors.shape[0]
+        self.vectors = pl.DataFrame(
+            {
+                "index": pl.Series(
+                    range(rows_len, rows_len + len(ids_unique)), dtype=pl.UInt64
+                ),
+                "text": ids_unique,
+                "embed": res.embeddings,
+            }
+        )
+        self.save()
+
+    def from_graph_db(self, db: Driver):
         records, _, _ = db.execute_query(QUERY["match_all"])
         ids: list[str] = [record["n.id"] for record in records]
         ids_series = pl.Series(ids, dtype=pl.String)

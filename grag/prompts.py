@@ -9,7 +9,7 @@ Thực hiện các bước sau:
 0. Không viết bất kỳ đoạn mã nào.
 1. Xác định tất cả các thực thể và phân loại chúng thành ngành đào tạo, giảng viên, môn học, ... Chi tiết hóa mô tả và từ khóa quan trọng của từng thực thể.
 2. Xác định tất cả các mối quan hệ giữa các thực thể từ văn bản đầu vào. Mối quan hệ có thể là bất kỳ thứ gì, từ thuộc về, hiểu, sử dụng, liên quan tới...
-3. Trả kết quả dưới dạng ("entity", ..., ...) cho loại thực thể hoặc ("relationship", ..., ...) cho loại mối quan hệ. Không trả về kết quả trống. Luôn bắt đầu với "thực thể" hoặc "mối quan hệ".
+3. Trả kết quả dưới dạng ("entity", "loại", "Tên", "mô tả") cho loại thực thể hoặc ("relationship", "Nút 1", "Nút 2", "mô tả", "từ khóa") cho loại mối quan hệ. Không trả về kết quả trống. Luôn bắt đầu với "entity" hoặc "relationship".
 
 Ví dụ:
 
@@ -197,7 +197,7 @@ Thực hiện các bước sau:
 0. Không viết bất kỳ đoạn mã nào.
 1. Xác định tất cả các thực thể và phân loại chúng thành ngành đào tạo, giảng viên, môn học,...
 2. Xác định tất cả các mối quan hệ giữa các thực thể từ văn bản đầu vào. Mối quan hệ có thể là bất kỳ thứ gì, từ thuộc về, hiểu, sử dụng, liên quan tới...
-3. Trả về kết quả dưới dạng ("entity", ..., ...) cho loại entity hoặc ("relationship", ..., ...) cho loại mối quan hệ. Không trả về kết quả trống. Luôn bắt đầu bằng "entity" hoặc "relationship".
+3. Trả kết quả dưới dạng ("entity", "loại", "Tên", "mô tả") cho loại thực thể hoặc ("relationship", "Nút 1", "Nút 2", "mô tả", "từ khóa") cho loại mối quan hệ. Không trả về kết quả trống. Luôn bắt đầu với "entity" hoặc "relationship".
 4. Giảm thiểu số lượng thực thể không có mối quan hệ.
 
 Ví dụ:
@@ -226,7 +226,7 @@ Thực hiện các bước sau:
 0. Không viết bất kỳ đoạn mã nào.
 1. Xác định tất cả các thực thể và phân loại chúng thành ngành đào tạo, giảng viên, môn học...
 2. Xác định tất cả các mối quan hệ giữa các thực thể từ văn bản đầu vào. Mối quan hệ có thể là bất kỳ thứ gì, từ thuộc về, hiểu, sử dụng, liên quan tới...
-3. Trả về kết quả dưới dạng ("entity", ..., ...) cho loại thực thể hoặc ("relationship", ..., ...) cho loại mối quan hệ. Không trả về kết quả trống. Luôn bắt đầu bằng "entity" hoặc "relationship".
+3. Trả kết quả dưới dạng ("entity", "loại", "Tên", "mô tả") cho loại thực thể hoặc ("relationship", "Nút 1", "Nút 2", "mô tả", "từ khóa") cho loại mối quan hệ. Không trả về kết quả trống. Luôn bắt đầu với "entity" hoặc "relationship".
 4. Tạo thêm các thực thể
 Ví dụ:
 
@@ -237,10 +237,12 @@ Ví dụ:
 ]
 
 Đầu ra:
+[
 ("entity", "Kiến thức", "khái niệm cơ bản về tư duy logic", "chuẩn đầu ra kiến thức của CLO1", "chuẩn đầu ra, kiến thức, toán rời rạc")
 ("entity", "Kiến thức", "phương pháp toán trên tập các đối tượng rời rạc", "chuẩn đầu ra kiến thức của CLO1", "chuẩn đầu ra, kiến thức, toán rời rạc")
 ("entity", "Kiến thức", "lược đồ xây dựng thuật toán", "chuẩn đầu ra kiến thức của CLO1", "chuẩn đầu ra, kiến thức, toán rời rạc")
 ("entity", "Kiến thức", "lý thuyết đồ thị", "chuẩn đầu ra kiến thức của CLO2", "chuẩn đầu ra, kiến thức, toán rời rạc")
+]
 
 
 Sẽ cung cấp cho bạn một danh sách các thực thể, bạn có thể tìm thêm các thực thể/mối quan hệ từ đó.
@@ -265,18 +267,21 @@ Nguyễn Ngọc Hoá là ai?
 
 Đầu ra:
 [
-("entity", "giảng viên", "Nguyễn Ngọc Hoá"),
+("entity", "người", "Nguyễn Ngọc Hoá"),
+("type", "người"),
 ]
 
 Ví dụ 2:
 
 Câu hỏi:
-
 Liệt kê tất cả các giảng viên có học hàm, học vị từ Phó giáo sư trở lên?
 
 Đầu ra:
 [
 ("type", "PGS. TS"),
+("type", "người"),
+("type", "giảng viên"),
+("type", "học hàm"),
 ]
 
 Đây là câu hỏi:
@@ -291,8 +296,7 @@ Do the following:
 0. Don't write any code.
 1. Get all the entities and find out it is a location, organization, person, geo or event, .... Get it description and important keyword.
 2. Get all relationship of one entity to other entities from the input text. The relationship can be any thing from help, create, friend with, a componenet of, ...
-3. Return it as in the format of ("entity", ..., ...  ) for the entity type or ("relationship", ..., ....) the relationship type. Don't give any empty output. It always started with either entity or a relationship 
-
+3. Return it as in the format of ("entity", "type", "name", "description") for the entity type or ("relationship", "Node 1", "Node 2", "description", "keyword") the relationship type. Don't give any empty output. It always started with either "entity" or "relationship"
 
 For example:
 With this input:
@@ -340,7 +344,7 @@ Do the following:
 0. Don't write any code.
 1. Get all the entities and find out it is a location, organization, person, geo or event, ....
 2. Get all relationship of one entity to other entities from the input text. The relationship can be any thing from help, create, friend with, ...
-3. Return it as in the format of ("entity", ..., ...  ) for the entity type or ("relationship", ..., ....) the relationship type. Don't give any empty output. It always started with either entity or a relationship 
+3. Return it as in the format of ("entity", "type", "name", "description") for the entity type or ("relationship", "Node 1", "Node 2", "description", "keyword") the relationship type. Don't give any empty output. It always started with either "entity" or "relationship"
 4. Minimize amount of entities that don't have any relattionship.
 
 Example:
@@ -367,7 +371,7 @@ Do the following:
 0. Don't write any code.
 1. Get all the entities and find out it is a location, organization, person, geo or event, ....
 2. Get all relationship of one entity to other entities from the input text. The relationship can be any thing from help, create, friend with, ...
-3. Return it as in the format of ("entity", ..., ...  ) for the entity type or ("relationship", ..., ....) the relationship type. Don't give any empty output. It always started with either entity or a relationship 
+3. Return it as in the format of ("entity", "type", "name", "description") for the entity type or ("relationship", "Node 1", "Node 2", "description", "keyword") the relationship type. Don't give any empty output. It always started with either "entity" or "relationship"
 4. Minimize amount of entities that don't have any relattionship.
 
 Example:

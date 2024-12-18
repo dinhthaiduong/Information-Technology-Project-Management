@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from grag.prompts import PROMPT
 from grag.query import QUERY
 from grag.rag import GraphRag
-from grag.utils import create_work_dir, get_index_or
+from grag.utils import create_work_dir
 from grag.vectrag import VectorRag
 import os
 
@@ -25,29 +25,29 @@ class HybirdRag:
             embed_len=embed_len,
             save_file="entites_hybird.parquet",
         )
+
+        self.labels_rag: VectorRag = VectorRag(
+            graph_rag.work_dir,
+            model=vector_model,
+            embed_len=embed_len,
+            save_file="labels.parquet",
+        )
+
         self.doc_rag: VectorRag = vector_rag
 
         create_work_dir(self.graph_rag.work_dir)
         if not os.path.exists(graph_rag.work_dir + "entites_hybird.parquet"):
-            self.entity_rag.from_a_graph_db(graph_rag.db)
+            self.entity_rag.from_graph_db(graph_rag.db)
 
-    # def from_prev(graph_rag: GraphRag, vector_rag: VectorRag) -> None:
-    #     self.graph_rag: GraphRag = graph_rag
-    #     self.entity_rag: VectorRag = VectorRag(
-    #         graph_rag.work_dir, model=vector_model, embed_len=embed_len
-    #     )
-    #     self.doc_rag: VectorRag = vector_rag
-    #
-    #     create_work_dir(self.graph_rag.work_dir)
-    #     if not os.path.exists(graph_rag.work_dir + "entities.parquet"):
-    #         self.entity_rag.from_a_graph_db(graph_rag.db)
-    #
+        if not os.path.exists(graph_rag.work_dir + "labels.parquet"):
+            self.labels_rag.from_graph_db_labels(graph_rag.db)
+
     async def chat(self, question: str) -> tuple[str, list[str]]:
         chat_res = await self.graph_rag.chat_create_entity_type(question)
         entities = self.graph_rag.get_entities_from_chat_no_filter(chat_res)
 
         output: set[str] = set()
-        vector_entities: list[str] = []
+        vector_entities: set[str] = set() 
         vector_types: set[str] = set()
         queries = []
 
@@ -58,7 +58,7 @@ class HybirdRag:
                     continue
                 for en in self.entity_rag.query(entity[2]):
                     en_c = '"' + en.capitalize() + '"'
-                    vector_entities.append(en_c)
+                    vector_entities.add(en_c)
             else:
                 if len(entity) > 2:
                     vector_types.add(entity[1].capitalize())
@@ -66,7 +66,9 @@ class HybirdRag:
         queries.append(QUERY["match_list"].format(ids=",".join(vector_entities)))
 
         for e_type in vector_types:
-            queries.append(QUERY["match_type"].format(type=e_type))
+            lables = self.labels_rag.query(e_type, top_k=2)
+            if len(lables) > 1:
+                queries.append(QUERY["match_type"].format(type=lables[0]))
 
         for query in queries:
             records, _, _ = self.graph_rag.db.execute_query(query)
@@ -106,4 +108,4 @@ class HybirdRag:
         self.doc_rag.insert(input)
 
     def reload_vector_store(self):
-        self.entity_rag.from_a_graph_db(self.graph_rag.db)
+        self.entity_rag.from_graph_db(self.graph_rag.db)
