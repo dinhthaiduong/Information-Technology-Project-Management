@@ -21,7 +21,7 @@ Tên giảng viên: Nguyễn Ngọc Hoá, chức danh: TS, chuyên ngành: Công
 Kết quả đầu ra 1 sẽ là:
 [
 ("entity", “học phần”, “Kiến trúc máy tính”, “Nghiên cứu về cấu trúc và hoạt động của máy tính, từ các thành phần phần cứng cơ bản đến cách chúng tương tác với phần mềm”),
-("entity", “tên tiếng Anh”, “Computer Architecture”, “Là tên tiếng Anh của học phần Kiến trúc máy tính”),
+("entity", “tên tiếng Anh”, “Computer Architecture”, “Computer Architecture Là tên tiếng Anh của học phần Kiến trúc máy tính”),
 ("entity", “giảng viên”, "Nguyễn Đình Việt", “Nguyễn Đình Việt là 1 Phó giáo sư, Tiến sĩ chuyên ngành Đảm bảo toán học cho máy tính và hệ thống tính toán của trường Đại học Công Nghệ”),
 ("entity", “giảng viên”, “Nguyễn Ngọc Hoá”, "Nguyễn Ngọc Hoá là 1 Tiến sĩ chuyên ngành Công nghệ thông tin của trường Đại học Công Nghệ"),
 ("entity", “chức danh”, “PGS. TS”, “Viết tắt cho Phó giáo sư, Tiến sĩ”),
@@ -85,7 +85,7 @@ Tuần Nội dung giảng dạy lý thuyết thực hành Nội dung sinh viên 
 Kết quả đầu ra 2 sẽ là:
 [
 ("entity", “học phần”, “Toán học rời rạc”, “Nghiên cứu các khái niệm như số học, lý thuyết đồ thị, lý thuyết tập hợp, lý thuyết xác suất rời rạc, đếm, lý thuyết tự động, và các cấu trúc toán học có tính chất rời rạc”),
-("entity", “tên tiếng Anh”, “Discrete Mathematics”, “Là tên tiếng Anh của học phần Toán học rời rạc”),
+("entity", “tên tiếng Anh”, “Discrete Mathematics”, “Discrete Mathematics Là tên tiếng Anh của học phần Toán học rời rạc”),
 ("entity", “mã số học phần”, “INT 1050”, “Là mã số học phần của học phần Toán học rời rạc”),
 ("entity", “số tín chỉ”, “4”, “Là số tín chỉ của học phần Toán học rời rạc”),
 ("entity", “học phần tiên quyết”, “Không yêu cầu”, “Là yêu cầu học phần tiên quyết để học Toán học rời rạc”),
@@ -184,8 +184,15 @@ This in the input text: {input_text}
 """
 
 PROMPT["CHAT"] = """
+Làm các bước sau:
+1. Đọc hiểu câu hỏi.
+2. Loại hết các thông tin nhiễu trong thông tin cung cấp.
+3. Trả lời câu hỏi được cung cấp.
+
+Đây là câu hỏi:
 {question}
 
+Đây là thông tin cung cấp để trả lới câu hỏi trên:
 {received}
 """
 

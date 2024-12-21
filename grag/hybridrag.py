@@ -73,21 +73,25 @@ class HybirdRag:
         for query in queries:
             records, _, _ = self.graph_rag.db.execute_query(query)
 
+            record_str = ""
             if len(records) > 0:
-                output.add(records[0].get("e.description", ""))
+                e = records[0][0]
+                record_str = e.get("id", "") + " " + e.get("description", "")
 
             for record in records:
-                output.add(record["r.description"])
-                output.add(record["e2.description"])
+                record_str += " " + record[1].get("description", "")
+                output.add(record[2].get("id", "") + " " + record[2].get("description", ""))
 
-        output_nearest = self.entity_rag.similality(question, list(output), 50)
+            output.add(record_str)
+
+        output_nearest = self.entity_rag.similality(question, list(output), 30)
 
         output_prompt: set[str] = set(output_nearest)
 
-        if len(output_nearest) < 3:
-            docs_nearest = self.doc_rag.query(question, top_k=2)
-            if len(docs_nearest) > 1:
-                output_prompt.add(docs_nearest[0])
+        # if len(output_prompt) < 15:
+        docs_nearest = self.doc_rag.query(question, top_k=2)
+        if len(docs_nearest) > 1:
+            output_prompt.add(docs_nearest[0])
 
         # if len(output_nearest) > 1:
         #     docs_nearest = self.doc_rag.query(output_nearest[0], top_k=2)
@@ -97,7 +101,7 @@ class HybirdRag:
         print("text recive docs len: ", len(output_prompt))
 
         prompt = PROMPT["CHAT"].format(
-            question=question, received=".".join(output_prompt)
+            question=question, received="\n".join(output_prompt)
         )
         print(prompt)
         ans = await self.graph_rag.client.chat([{"role": "user", "content": prompt}])

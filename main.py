@@ -1,4 +1,6 @@
 import asyncio
+from lightrag import LightRAG, QueryParam
+from lightrag.llm import gpt_4o_mini_complete
 from streamlit_option_menu import option_menu
 import streamlit as st
 from neo4j import GraphDatabase, Record
@@ -33,15 +35,13 @@ async def main():
 
 
 async def hybrid_rag():
-    graph_rag = RagAsync(
-        WORK_DIR,
-        # "google/gemini-1.5-flash-8b",
-        # "ollama/qwen2",
-        "groq/llama3-70b-8192",
-        # "openai/gpt-4o-mini",
-        # "ollama/llama3.2",
-        db_uri=os.getenv("BOLT_URI") or "bolt://localhost:7687",
-        db_auth=(NEO4J_USER, NEO4J_PASSWORD),
+    WORKING_DIR = "./dickens"
+    graph_rag = LightRAG(
+        working_dir=WORKING_DIR,
+        llm_model_func=gpt_4o_mini_complete,
+        embedding_func_max_async = 5,
+        llm_model_max_async = 5,
+        # llm_model_func=gpt_4o_complete  # Optionally, use a stronger model
     )
 
     choice = option_menu("Options", ["Upload document", "Chat"])
@@ -63,11 +63,10 @@ async def hybrid_rag():
                 if file_extension == "pdf":
                     file_pdf = PdfReader(file)
                     pages_text = [page.extract_text() for page in file_pdf.pages]
-                    await graph_rag.insert(pages_text, 4)
+                    await graph_rag.ainsert(pages_text)
                 else:
                     content = file.read().decode()
-                    chunks = split_text_into_chunks(content)
-                    await graph_rag.insert(chunks, 4)
+                    await graph_rag.ainsert(content)
 
     else:
         show_graph()
@@ -90,7 +89,7 @@ async def hybrid_rag():
                 _ = st.chat_message("user").markdown(message["context"])
 
             response1 = f"Echo: {prompt1}"
-            response1, _ = await graph_rag.chat(prompt1)
+            response1 = await graph_rag.aquery(prompt1, QueryParam(mode="hybrid"))
 
             with st.chat_message("assistant"):
                 _ = st.markdown(response1)

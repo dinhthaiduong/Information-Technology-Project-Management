@@ -37,9 +37,9 @@ match (n) unwind labels(n) as label return distinct label;
 QUERY["match_list"] = """
 match (e)-[r]-(e2)
 where e.id in [{ids}]
-return distinct e.description, r.description, e2.description;
+return distinct e, r, e2;
 """
 
 QUERY["match_type"] = """
-match (n: `{type}`)-[r]-(e2) return distinct n.description, r.description, e2.description;
+match (n: `{type}`)-[r]-(e2) return distinct n, r, e2;
 """

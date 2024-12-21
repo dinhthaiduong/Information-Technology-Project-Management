@@ -1,1 +1,1 @@
-{"cmd": "\n# vec_rag.query(\"thợ nuôi ong\")\n# vec_rag.query(\"bee\")\nvec_rag.query(\"giảng viên\")\n# vec_rag.query(\"People\")\n", "cmd_opts": " --cell_id=59DNQedlWD -s", "import_complete": 1, "terminal": "nvimterm"}
+{"cmd": "# with open(\"data/all.md\") as f:\n#     rag.insert(f.read())\n\n# Perform hybrid search\n\nprint(rag.query(\"Thông tin về môn triết học mac lennin\", param=QueryParam(mode=\"hybrid\")))", "cmd_opts": " --cell_id=ExYw2EHdZw -s", "import_complete": 1, "terminal": "nvimterm"}

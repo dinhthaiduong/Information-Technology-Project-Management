@@ -6,7 +6,7 @@ import asyncio
 import sys
 import os
 
-_ = load_dotenv()
+_ = load_dotenv(".env2")
 
 
 async def main():
@@ -20,14 +20,14 @@ async def main():
     graph_rag = RagAsync(
         sys.argv[1],
         "openai/gpt-4o-mini",
-        # "groq/llama3-70b-8192",
+        # "groq/llama3-70b-8192",J
         os.getenv("BOLT_URI") or "bolt://127.0.0.1:7687",
         (NEO4J_USER, NEO4J_PASSWORD),
     )
 
     eval_ragcheck = {"results": []}
     eval_ragas = []
-    for idx, question in enumerate(tqdm(questions)):
+    for idx, question in enumerate(tqdm(questions[:10])):
         ans, retrieved_context = await graph_rag.chat(question["Q"])
 
         eval_ragcheck["results"].append(
@@ -51,12 +51,13 @@ async def main():
                 "user_input": question["Q"],
                 "retrieved_contexts": retrieved_context,
                 "response": ans,
+                "reference": question["A"]
             }
         )
     ragcheck_file = open("examples/ragcheck_input.json", "w")
     ragas_file = open("examples/ragas_input.json", "w")
-    json.dump(eval_ragcheck, ragcheck_file)
-    json.dump(eval_ragas, ragas_file)
+    json.dump(eval_ragcheck, ragcheck_file, ensure_ascii=False)
+    json.dump(eval_ragas, ragas_file, ensure_ascii=False)
     ragcheck_file.close()
     ragas_file.close()
 
